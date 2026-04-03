@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "maggi"
+  site-url: "https://suchith720.github.io/maggi"
+  description: "Domain Knowledge driven compression of LLMs"
+  repo-branch: main
+  repo-url: "https://github.com/suchith720/maggi"
