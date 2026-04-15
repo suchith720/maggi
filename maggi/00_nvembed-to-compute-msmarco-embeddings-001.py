@@ -8,10 +8,10 @@ import os, torch, json, torch.multiprocessing as mp, joblib, numpy as np, scipy.
 
 from typing import Optional
 
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoConfig
 
 from xcai.basics import *
-from xcai.models.nvembed.NVM0XX import NVM009
+from xcai.models.nvembed.NVM0XX import NVM009, NVM0XXConfig
 from xcai.sdata import SMainXCDataset, SXCDataset, identity_collate_fn 
 
 from sugar.core import load_raw_file
@@ -119,7 +119,9 @@ def additional_args():
 if __name__ == '__main__':
     input_args, extra_args = parse_args(), additional_args()
 
-    output_dir = "/home/sasokan/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
+    # output_dir = "/home/sasokan/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
+    output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
+
     save_dir = f"{output_dir}/representations/{input_args.dataset}/"
 
     mname = 'nvidia/NV-Embed-v2'
@@ -185,8 +187,20 @@ if __name__ == '__main__':
         use_cpu_for_clustering=True,
     )
 
+    config = NVM0XXConfig(
+        margin=0.3,
+        tau=0.1,
+        n_negatives=10,
+        normalize=False,
+        apply_softmax=True,
+        use_encoder_parallel=True,
+    )
+
+    hf_config = AutoConfig.from_pretrained(mname)
+    for k in hf_config: setattr(config, k, getattr(hf_config, k))
+
     def model_fn(mname):
-        model = NVM009.from_pretrained(mname, margin=0.3, tau=0.1, n_negatives=10, normalize=False, apply_softmax=True, use_encoder_parallel=True)
+        model = NVM009.from_pretrained(mname, config=config)
         return model
 
     model = load_model(args.output_dir, model_fn, {"mname": mname}, do_inference=do_inference, use_pretrained=input_args.use_pretrained)

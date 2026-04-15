@@ -1,4 +1,4 @@
-datasets="scidocs fiqa nfcorpus webis-touche2020 hotpotqa nq quora trec-covid msmarco climate-fever dbpedia-entity fever"
+datasets="trec-covid climate-fever quora hotpotqa nq dbpedia-entity fever msmarco"
 
 for dataset in $datasets
 do

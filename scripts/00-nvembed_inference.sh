@@ -9,7 +9,7 @@ fi
 dataset=$1
 role=$2
 
-n_gpu=4
+n_gpu=3
 batch_size=16
 
 for i in $(seq 0 $((n_gpu -1)))
