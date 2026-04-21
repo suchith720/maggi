@@ -26,7 +26,7 @@ def map_from_exact_to_full():
 
 
 if __name__ == "__main__":
-    expt_no = 1
+    expt_no = 2
 
     # Experiments 0 to 2 focused more on NV-Embed-v2 negatives.
     # Experiments 3 onwards are about using Cross encoder scores, which should have been the obvious first step.
@@ -89,12 +89,12 @@ if __name__ == "__main__":
 
     elif expt_no == 2:
 
-        thresh = 0.8
+        thresh = 0.95
 
         fname = "/data/outputs/mogicX/54_nvembed-for-msmarco-001/matrices/msmarco/trn_X_Y_normalize-exact.npz"
         pos_lbl = sp.load_npz(fname)
 
-        pred_file = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/predictions/msmarco/train_predictions.npz"
+        pred_file = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/predictions/msmarco/train_predictions.npz"
         pred_lbl = sp.load_npz(pred_file)
 
         mask = np.hstack([n.data < p.max() * thresh for n,p in tqdm(zip(pred_lbl, pos_lbl), total=pos_lbl.shape[0])])
