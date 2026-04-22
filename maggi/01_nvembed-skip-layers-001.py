@@ -54,6 +54,8 @@ def parse_args():
     parser.add_argument('--dataset', type=str)
     parser.add_argument('--dset_type', type=str, default="beir")
     parser.add_argument('--batch_size', type=int, default=16)
+    parser.add_argument('--skip_layer_start', type=int, default=10)
+    parser.add_argument('--num_layers_to_skip', type=int, default=10)
     return parser.parse_known_args()[0]
 
 
@@ -63,6 +65,9 @@ if __name__ == '__main__':
     # Input arguements
 
     input_args = parse_args()
+
+    skip_layer_end = input_args.skip_layer_start + input_args.num_layers_to_skip - 1
+    expt_prefix = f"skip-layers-{input_args.skip_layer_start:02d}-{skip_layer_end:02d}"
 
     output_dir = "/data/suchith/outputs/maggi/01_nvembed-skip-layers-001"
 
@@ -82,9 +87,9 @@ if __name__ == '__main__':
     token_dir = f"{output_dir}/tokenized_inputs/{input_args.dset_type}/{input_args.dataset.replace('/', '-')}"
     os.makedirs(token_dir, exist_ok=True)
 
-    metric_dir = f"{output_dir}/metrics/{input_args.dset_type}"
+    metric_dir = f"{output_dir}/metrics/{input_args.dset_type}/{input_args.dataset}/"
     os.makedirs(metric_dir, exist_ok=True)
-    metric_file = f"{metric_dir}/{input_args.dataset}.json"
+    metric_file = f"{metric_dir}/{input_args.dataset}_{expt_prefix}.json"
 
     mname = 'nvidia/NV-Embed-v2'
 
@@ -147,7 +152,7 @@ if __name__ == '__main__':
 
     # Load configuration
 
-    config = load_config(mname, skip_layer_start=2, num_layers_to_skip=10)
+    config = load_config(mname, skip_layer_start=input_args.skip_layer_start, num_layers_to_skip=10)
 
     # Load model
 
@@ -174,7 +179,7 @@ if __name__ == '__main__':
 
     tst_lbl = sp.load_npz(gt_file)
     metrics, tst_pred = compute_metrics(tst_repr, tst_lbl, lbl_repr, metric_type="H")
-    sp.save_npz(f"{pred_dir}/test_predictions.npz", tst_pred)
+    sp.save_npz(f"{pred_dir}/test_predictions_{expt_prefix}.npz", tst_pred)
 
     with open(metric_file, "w") as file:
         json.dump(metrics, file, indent=4)
