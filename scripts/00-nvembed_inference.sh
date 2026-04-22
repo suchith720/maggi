@@ -19,6 +19,10 @@ do
 	then
 		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-to-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_lbl_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type &
 
+	elif [ $role == "phr" ]
+	then
+		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-to-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_phr_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type &
+
 	elif [ $role == "tst" ]
 	then
 		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-to-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_tst_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type &

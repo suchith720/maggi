@@ -21,6 +21,7 @@ def parse_args():
     parser.add_argument('--dset_type', type=str, default="beir")
 
     parser.add_argument('--get_lbl_repr', action='store_true')
+    parser.add_argument('--get_phr_repr', action='store_true')
     parser.add_argument('--get_tst_repr', action='store_true')
     parser.add_argument('--get_trn_repr', action='store_true')
 
@@ -55,7 +56,16 @@ if __name__ == '__main__':
             dataset = tokenized_labels(lbl_info_file, input_args.idx, input_args.parts)
             joblib.dump(dataset, fname)
 
-    if input_args.get_tst_repr:
+    elif input_args.get_phr_repr:
+        fname = f"{token_dir}/phrase_{input_args.idx:02d}-{input_args.parts:02d}.joblib"
+        if os.path.exists(fname):
+            dataset = joblib.load(fname)
+        else:
+            lbl_info_file = f"{data_dir}/raw_data/phrase.raw.csv"
+            dataset = tokenized_labels(lbl_info_file, input_args.idx, input_args.parts, max_length=64)
+            joblib.dump(dataset, fname)
+
+    elif input_args.get_tst_repr:
         fname = f"{token_dir}/test_{input_args.idx:02d}-{input_args.parts:02d}.joblib"
         if os.path.exists(fname):
             dataset = joblib.load(fname)
@@ -64,7 +74,7 @@ if __name__ == '__main__':
             dataset = tokenized_query(qry_info_file, input_args.idx, input_args.parts, instruct_file, input_args.dataset)
             joblib.dump(dataset, fname)
 
-    if input_args.get_trn_repr:
+    elif input_args.get_trn_repr:
         fname = f"{token_dir}/train_{input_args.idx:02d}-{input_args.parts:02d}.joblib"
         if os.path.exists(fname):
             dataset = joblib.load(fname)
@@ -151,9 +161,12 @@ if __name__ == '__main__':
     if input_args.get_lbl_repr: 
         get_and_save_representation(learn, dataset, f'{save_dir}/lbl_repr_{input_args.idx:03d}.pth')
 
-    if input_args.get_trn_repr: 
+    elif input_args.get_tst_repr: 
+        get_and_save_representation(learn, dataset, f'{save_dir}/tst_repr_{input_args.idx:03d}.pth')
+
+    elif input_args.get_trn_repr: 
         get_and_save_representation(learn, dataset, f'{save_dir}/trn_repr_{input_args.idx:03d}.pth')
 
-    if input_args.get_tst_repr: 
-        get_and_save_representation(learn, dataset, f'{save_dir}/tst_repr_{input_args.idx:03d}.pth')
+    elif input_args.get_phr_repr: 
+        get_and_save_representation(learn, dataset, f'{save_dir}/phr_repr_{input_args.idx:03d}.pth')
 

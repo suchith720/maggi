@@ -26,7 +26,7 @@ def map_from_exact_to_full():
 
 
 if __name__ == "__main__":
-    expt_no = 2
+    expt_no = 5
 
     # Experiments 0 to 2 focused more on NV-Embed-v2 negatives.
     # Experiments 3 onwards are about using Cross encoder scores, which should have been the obvious first step.
@@ -146,4 +146,57 @@ if __name__ == "__main__":
         save_name = "ce-positives-topk-05_trn_X_Y" + f"_thresh-{int(thresh * 100)}.npz"
         fname = f"{save_dir}/cross_encoder/{save_name}"
         sp.save_npz(fname, neg_lbl)
+
+    elif expt_no == 5:
+
+        neg_file = "/data/datasets/beir/msmarco/XC/ce-negatives-topk-05_trn_X_Y.npz"
+        neg_lbl = sp.load_npz(neg_file)
+
+        neg_lbl_top5 = retain_topk(neg_lbl, k=5)
+        neg_lbl_top10 = retain_topk(neg_lbl, k=10)
+
+        # positives
+
+        rows, cols = neg_lbl_top5.nonzero()
+        neg_lbl[rows, cols] = 0.0
+        neg_lbl.eliminate_zeros()
+
+        save_file = f"/data/datasets/beir/msmarco/XC/cross_encoder/ce-negatives-topk-05_trn_X_Y_remove-top-5.npz"
+        sp.save_npz(save_file, neg_lbl)
+
+        rows, cols = neg_lbl_top10.nonzero()
+        neg_lbl[rows, cols] = 0.0
+        neg_lbl.eliminate_zeros()
+
+        save_file = f"/data/datasets/beir/msmarco/XC/cross_encoder/ce-negatives-topk-05_trn_X_Y_remove-top-10.npz"
+        sp.save_npz(save_file, neg_lbl)
+
+        # expands positives
+
+        gt_file = "/data/datasets/beir/msmarco/XC/trn_X_Y_ce-exact.npz"
+        gt_lbl = sp.load_npz(gt_file)
+
+        elidx2lidx = map_from_exact_to_full()
+        nlidx2lidx = map_from_negatives_to_full()
+
+        def expand_positives(mat):
+            pos_file = "/data/datasets/beir/msmarco/XC/trn_X_Y.npz"
+            pos_lbl = sp.load_npz(pos_file).astype(np.float32)
+            pos_lbl.data[:] = 0.0
+
+            rows, cols = gt_lbl.nonzero()
+            cols = [elidx2lidx[c] for c in cols]
+            pos_lbl[rows, cols] = gt_lbl.data
+
+            rows, cols = mat.nonzero()
+            cols = [nlidx2lidx[c] for c in cols]
+            pos_lbl[rows, cols] = mat.data
+
+            return pos_lbl
+
+        save_file = f"/data/datasets/beir/msmarco/XC/cross_encoder/ce-positives-topk-05_trn_X_Y_top-5.npz"
+        sp.save_npz(save_file, expand_positives(neg_lbl_top5))
+
+        save_file = f"/data/datasets/beir/msmarco/XC/cross_encoder/ce-positives-topk-05_trn_X_Y_top-10.npz"
+        sp.save_npz(save_file, expand_positives(neg_lbl_top10))
 

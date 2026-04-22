@@ -81,7 +81,7 @@ if __name__ == '__main__':
     instruct_file = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json"
     gt_file = f"/data/datasets/{input_args.dset_type}/{input_args.dataset}/XC/tst_X_Y.npz"
 
-    lbl_dir = f"/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
+    lbl_dir = f"/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
     lbl_file = f"{lbl_dir}/representations/{input_args.dset_type}/{input_args.dataset}/lbl_repr.pth"
 
     token_dir = f"{output_dir}/tokenized_inputs/{input_args.dset_type}/{input_args.dataset.replace('/', '-')}"
