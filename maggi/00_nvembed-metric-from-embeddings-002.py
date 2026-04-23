@@ -47,11 +47,13 @@ if __name__ == "__main__":
     pred_dir = f"{output_dir}/predictions/{input_args.dset_type}/{input_args.dataset}"
     os.makedirs(pred_dir, exist_ok=True)
 
-    metrics, tst_pred = compute_metrics(tst_repr, lbl_repr, tst_lbl, metric_type="M")
+    metric_type = "H" if input_args.dset_type == "multihop" else "M"
+
+    metrics, tst_pred = compute_metrics(tst_repr, lbl_repr, tst_lbl, metric_type=metric_type)
     sp.save_npz(f"{pred_dir}/test_predictions{suffix}.npz", tst_pred)
 
     if input_args.train:
-        m, trn_pred = compute_metrics(trn_repr, lbl_repr, trn_lbl, metric_type="M")
+        m, trn_pred = compute_metrics(trn_repr, lbl_repr, trn_lbl, metric_type=metric_type)
         sp.save_npz(f"{pred_dir}/train_predictions{suffix}.npz", trn_pred)
         if metrics is not None: metrics = {"train": m, "test": metrics}
 
