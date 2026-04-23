@@ -8,8 +8,10 @@ def parse_args():
     parser.add_argument('--dset_type', type=str, default="beir")
     parser.add_argument('--train', action='store_true')
     parser.add_argument('--normalize', action='store_true')
-    parser.add_argument('--save_suffix', type=str, default=None)
     parser.add_argument('--phr_pred', action='store_true')
+
+    parser.add_argument('--save_suffix', type=str, default=None)
+    parser.add_argument('--save_prefix', type=str, default=None)
     return parser.parse_known_args()[0]
 
 if __name__ == "__main__":
@@ -21,8 +23,9 @@ if __name__ == "__main__":
     output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
 
     repr_dir = f"{output_dir}/representations/{input_args.dset_type}/{input_args.dataset}"
+    metric_dir = f"{output_dir}/metrics/{input_args.dset_type}"
 
-    if input_args.phr_pred: input_args.save_suffix = "phrase"
+    if input_args.phr_pred: input_args.save_suffix = "phrase-lbl"
     suffix = "" if input_args.save_suffix is None else f"_{input_args.save_suffix}"
 
     # Load embeddings
@@ -48,20 +51,21 @@ if __name__ == "__main__":
     os.makedirs(pred_dir, exist_ok=True)
 
     metric_type = "H" if input_args.dset_type == "multihop" else "M"
+    label_name = "phases" if input_args.phr_pred else "labels"
 
     metrics, tst_pred = compute_metrics(tst_repr, lbl_repr, tst_lbl, metric_type=metric_type)
-    sp.save_npz(f"{pred_dir}/test_predictions{suffix}.npz", tst_pred)
+    sp.save_npz(f"{pred_dir}/test{suffix}_{label_name}.npz", tst_pred)
 
     if input_args.train:
         m, trn_pred = compute_metrics(trn_repr, lbl_repr, trn_lbl, metric_type=metric_type)
-        sp.save_npz(f"{pred_dir}/train_predictions{suffix}.npz", trn_pred)
+        sp.save_npz(f"{pred_dir}/train{suffix}_{label_name}.npz", trn_pred)
         if metrics is not None: metrics = {"train": m, "test": metrics}
 
     # Save metrics
 
     if metrics is not None:
-        os.makedirs(f"{output_dir}/metrics/{input_args.dset_type}", exist_ok=True)
-        metric_file = f"{output_dir}/metrics/{input_args.dset_type}/{input_args.dataset}{suffix}.json"
+        os.makedirs(metric_dir, exist_ok=True)
+        metric_file = f"{metric_dir}/{input_args.dataset}{suffix}.json"
         with open(metric_file, "w") as file:
             json.dump(metrics, file, indent=4)
 
