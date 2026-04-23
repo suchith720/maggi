@@ -6,7 +6,10 @@ __all__ = []
 # %% ../nbs/37_training-msmarco-distilbert-from-scratch.ipynb 2
 import os, torch, json, torch.multiprocessing as mp, joblib, numpy as np, scipy.sparse as sp, argparse
 
+from transformers import AutoConfig
+
 from xcai.basics import *
+from xcai.maggi.utils import *
 from xcai.models.nvembed.NVM0XX import NVM009, NVM0XXConfig
 
 # %% ../nbs/37_training-msmarco-distilbert-from-scratch.ipynb 4
@@ -19,6 +22,7 @@ def parse_args():
     parser.add_argument('--parts', type=int, required=True)
 
     parser.add_argument('--dset_type', type=str, default="beir")
+    parser.add_argument('--save_suffix', type=str, default=None)
 
     parser.add_argument('--get_lbl_repr', action='store_true')
     parser.add_argument('--get_phr_repr', action='store_true')
@@ -29,13 +33,12 @@ def parse_args():
 
     return parser.parse_known_args()[0]
 
-
 # %% ../nbs/37_training-msmarco-distilbert-from-scratch.ipynb 21
 if __name__ == '__main__':
     input_args = parse_args()
 
     # output_dir = "/home/sasokan/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
-    output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
+    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
 
     save_dir = f"{output_dir}/representations/{input_args.dset_type}/{input_args.dataset}/"
     data_dir = f"/data/datasets/{input_args.dset_type}/{input_args.dataset.replace('/', '-')}/XC/"
@@ -43,45 +46,59 @@ if __name__ == '__main__':
     token_dir = f"{output_dir}/tokenized_inputs/{input_args.dset_type}/{input_args.dataset.replace('/', '-')}"
     os.makedirs(token_dir, exist_ok=True)
 
-    instruct_file = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json"
+    # instruction = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json"
+    # input_args.save_suffix = None
+
+    instruction = "Given a multi-hop question, retrieve phrases relevant to the question"
+    input_args.save_suffix = "phrase"
 
     mname = 'nvidia/NV-Embed-v2'
 
+    lbl_suffix = f"_{input_args.idx:02d}-{input_args.parts:02d}" if input_args.parts > 1 else ""
+    if input_args.save_suffix is not None:
+        qry_suffix = f"_{input_args.save_suffix}{lbl_suffix}" if len(lbl_suffix) else f"_{input_args.save_suffix}"
+    else:
+        qry_suffix = lbl_suffix
+
     if input_args.get_lbl_repr:
-        fname = f"{token_dir}/label_{input_args.idx:02d}-{input_args.parts:02d}.joblib"
+        fname = f"{token_dir}/label{lbl_suffix}.joblib"
         if os.path.exists(fname):
             dataset = joblib.load(fname)
         else:
             lbl_info_file = f"{data_dir}/raw_data/label.raw.csv"
-            dataset = tokenized_labels(lbl_info_file, input_args.idx, input_args.parts)
+            dataset = tokenized_labels(lbl_info_file, input_args.idx, input_args.parts, model_name=mname)
             joblib.dump(dataset, fname)
 
     elif input_args.get_phr_repr:
-        fname = f"{token_dir}/phrase_{input_args.idx:02d}-{input_args.parts:02d}.joblib"
+        fname = f"{token_dir}/phrase{lbl_suffix}.joblib"
         if os.path.exists(fname):
             dataset = joblib.load(fname)
         else:
             lbl_info_file = f"{data_dir}/raw_data/phrase.raw.csv"
-            dataset = tokenized_labels(lbl_info_file, input_args.idx, input_args.parts, max_length=64)
+            dataset = tokenized_labels(lbl_info_file, input_args.idx, input_args.parts, model_name=mname, max_length=64)
             joblib.dump(dataset, fname)
 
     elif input_args.get_tst_repr:
-        fname = f"{token_dir}/test_{input_args.idx:02d}-{input_args.parts:02d}.joblib"
+        fname = f"{token_dir}/test{qry_suffix}.joblib"
         if os.path.exists(fname):
             dataset = joblib.load(fname)
         else:
             qry_info_file = f"{data_dir}/raw_data/test.raw.csv"
-            dataset = tokenized_query(qry_info_file, input_args.idx, input_args.parts, instruct_file, input_args.dataset)
+            dataset = tokenized_query(qry_info_file, input_args.idx, input_args.parts, instruction, input_args.dataset, 
+				      model_name=mname)
             joblib.dump(dataset, fname)
 
     elif input_args.get_trn_repr:
-        fname = f"{token_dir}/train_{input_args.idx:02d}-{input_args.parts:02d}.joblib"
+        fname = f"{token_dir}/train{qry_suffix}.joblib"
         if os.path.exists(fname):
             dataset = joblib.load(fname)
         else:
             qry_info_file = f"{data_dir}/raw_data/train.raw.csv"
-            dataset = tokenized_query(qry_info_file, input_args.idx, input_args.parts, instruct_file, input_args.dataset)
+            dataset = tokenized_query(qry_info_file, input_args.idx, input_args.parts, instruction, input_args.dataset,
+				      model_name=mname)
             joblib.dump(dataset, fname)
+    else:
+        raise ValueError("Please pass flag to process the type of document.")
 
     args = XCLearningArguments(
         output_dir=output_dir,
@@ -145,7 +162,7 @@ if __name__ == '__main__':
         return model
 
     model = load_model(args.output_dir, model_fn, {"mname": mname}, do_inference=True, 
-                       use_pretrained=input_args.use_pretrained)
+                       use_pretrained=True)
 
     # Learner
 
@@ -159,14 +176,15 @@ if __name__ == '__main__':
     os.makedirs(save_dir, exist_ok=True)
 
     if input_args.get_lbl_repr: 
-        get_and_save_representation(learn, dataset, f'{save_dir}/lbl_repr_{input_args.idx:03d}.pth')
-
-    elif input_args.get_tst_repr: 
-        get_and_save_representation(learn, dataset, f'{save_dir}/tst_repr_{input_args.idx:03d}.pth')
-
-    elif input_args.get_trn_repr: 
-        get_and_save_representation(learn, dataset, f'{save_dir}/trn_repr_{input_args.idx:03d}.pth')
+        get_and_save_representation(learn, dataset, f'{save_dir}/lbl_repr{lbl_suffix}.pth')
 
     elif input_args.get_phr_repr: 
-        get_and_save_representation(learn, dataset, f'{save_dir}/phr_repr_{input_args.idx:03d}.pth')
+        get_and_save_representation(learn, dataset, f'{save_dir}/phr_repr{lbl_suffix}.pth')
+
+    elif input_args.get_tst_repr: 
+        get_and_save_representation(learn, dataset, f'{save_dir}/tst_repr{qry_suffix}.pth')
+
+    elif input_args.get_trn_repr: 
+        get_and_save_representation(learn, dataset, f'{save_dir}/trn_repr{qry_suffix}.pth')
+
 

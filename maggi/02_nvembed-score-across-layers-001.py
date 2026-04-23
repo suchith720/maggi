@@ -38,7 +38,6 @@ def load_config(mname:str):
     for k in hf_config: setattr(config, k, getattr(hf_config, k))
     return config
 
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=str)
@@ -47,18 +46,6 @@ def parse_args():
     parser.add_argument('--skip_layer_start', type=int, default=None)
     parser.add_argument('--num_layers_to_skip', type=int, default=None)
     return parser.parse_known_args()[0]
-
-
-def get_representation(model, dataloader:DataLoader, representation_accumulation_steps:Optional[int]=None, to_cpu:Optional[bool]=True):
-    data_host, all_data = None, None
-    
-    for step, inputs in tqdm(enumerate(dataloader), total=len(dataloader)):
-        inputs = inputs.to(model.device)
-        with torch.no_grad(): data = getattr(self.model(**inputs), representation_attribute)
-
-        if representation_accumulation_steps is not None and (step + 1) % representation_accumulation_steps == 0:
-            pass
-
 
 def get_msmarco_per_instance_ndcg(fname):
     output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
@@ -76,7 +63,6 @@ def get_msmarco_per_instance_ndcg(fname):
     np.save(fname, metrics)
 
     return metrics
-
 
 def load_data(idx, fname):
     data_lbl = sp.load_npz("/data/datasets/beir/msmarco/XC/cross_encoder/ce-positives-topk-05_trn_X_Y_top-5.npz")
@@ -99,6 +85,22 @@ def load_data(idx, fname):
 
     return output
 
+def get_representation(model, dataloader:DataLoader, representation_attribute:str, representation_accumulation_steps:Optional[int]=None, 
+                       to_cpu:Optional[bool]=True):
+    data_host, all_data = None, None
+    
+    for step, inputs in tqdm(enumerate(dataloader), total=len(dataloader)):
+        inputs = {k: v.to(model.device) for k,v in inputs.items()}
+        with torch.no_grad(): 
+            with torch.amp.autocast(device_type="cuda"):
+                o = model(**inputs, output_hidden_states=True)
+
+                breakpoint()
+
+            data = getattr(o, representation_attribute)
+
+        if representation_accumulation_steps is not None and (step + 1) % representation_accumulation_steps == 0:
+            pass
 
 # %% ../nbs/37_training-msmarco-distilbert-from-scratch.ipynb 21
 if __name__ == '__main__':
@@ -145,8 +147,6 @@ if __name__ == '__main__':
         lbl_dset = tokenized_labels(lbl_info, 0, 1, model_name=mname)
         neg_dset = tokenized_labels(meta_info, 0, 1, model_name=mname)
         joblib.dump((trn_dset, lbl_dset, neg_dset), fname)
-
-    breakpoint()
 
     # Training arguements
 
@@ -209,12 +209,11 @@ if __name__ == '__main__':
     learn = XCLearner(
         model=model,
         args=args,
-        eval_dataset=dataset,
+        eval_dataset=lbl_dset,
         data_collator=identity_collate_fn,
     )
 
     # Get representation here
 
-    dataloader = learn.get_test_dataloader(dataset)
-
+    output = get_representation(model, lbl_dset, "data_output")
 

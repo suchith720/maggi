@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# -lt 2 ]
+if [ $# -lt 3 ]
 then
 	echo "scripts/00-nvembed_inference.sh <dataset> <role> <dset_type>"
 	exit 1
@@ -17,19 +17,19 @@ for i in $(seq 0 $((n_gpu -1)))
 do
 	if [ $role == "lbl" ]
 	then
-		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-to-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_lbl_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type &
+		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_lbl_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type &
 
 	elif [ $role == "phr" ]
 	then
-		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-to-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_phr_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type &
+		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_phr_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type &
 
 	elif [ $role == "tst" ]
 	then
-		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-to-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_tst_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type &
+		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_tst_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type &
 
 	elif [ $role == "trn" ]
 	then
-		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-to-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_trn_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type &
+		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_trn_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type &
 
 	else
 		echo "Invalid role: $role"

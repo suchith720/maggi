@@ -1,0 +1,1 @@
+python maggi/00_nvembed-metric-from-embeddings-002.py --dataset musique --dset_type multihop --normalize --phr_pred
