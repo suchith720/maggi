@@ -21,14 +21,46 @@ from sugar.core import load_raw_file
 # %% ../nbs/37_training-msmarco-distilbert-from-scratch.ipynb 4
 os.environ['WANDB_PROJECT'] = 'maggi_00-msmarco-00'
 
-def load_config(mname:str, skip_layer_start:Optional[int]=None, num_layers_to_skip:Optional[int]=None):
+def modulo(i:int, m:int):
+    if i == 0: return False
+    elif i % m: return False
+    else: return True
+
+def end_concentrated(i:int):
+    idxs = set([4, 8, 12, 16, 20, 21, 24, 26, 27, 28])
+    if i in idxs: return True
+    else: return False
+
+def start_concentrated(i:int):
+    idxs = set([4, 5, 6, 8, 11, 12, 16, 20, 24, 28])
+    if i in idxs: return True
+    else: return False
+
+def middle_concentrated(i:int):
+    idxs = set([4, 8, 11, 12, 15, 16, 17, 20, 21, 24, 28])
+    if i in idxs: return True
+    else: return False
+
+SKIP_FUNCS = {
+    "modulo-2": lambda x: modulo(x, 2),
+    "modulo-3": lambda x: modulo(x, 3),
+    "modulo-4": lambda x: modulo(x, 4),
+    "modulo-5": lambda x: modulo(x, 5),
+    "start_concentrated": start_concentrated,
+    "middle_concentrated": middle_concentrated,
+    "end_concentrated": end_concentrated,
+}
+
+def load_config(mname:str, expt_prefix:Optional[str]=None):
     hf_config = AutoConfig.from_pretrained(mname)
+
+    skip_layer_func = SKIP_FUNCS[expt_prefix]
+
     text_config = BidirectionalMistralConfig(
-        skip_layer_start=skip_layer_start,
-        num_layers_to_skip=num_layers_to_skip,
+        skip_layer_func=skip_layer_func,
     )
     for k in hf_config.text_config: 
-        if k != "skip_layer_start" and k != "skip_layer_end":
+        if k != "skip_layer_func":
             setattr(text_config, k, getattr(hf_config.text_config, k))
 
     config = NVM0XXConfig(
@@ -52,8 +84,7 @@ def parse_args():
     parser.add_argument('--dataset', type=str)
     parser.add_argument('--dset_type', type=str, default="beir")
     parser.add_argument('--batch_size', type=int, default=16)
-    parser.add_argument('--skip_layer_start', type=int, default=10)
-    parser.add_argument('--num_layers_to_skip', type=int, default=10)
+    parser.add_argument('--skip_func', type=str, default="modulo-3")
     return parser.parse_known_args()[0]
 
 # %% ../nbs/37_training-msmarco-distilbert-from-scratch.ipynb 21
@@ -63,10 +94,8 @@ if __name__ == '__main__':
 
     input_args = parse_args()
 
-    skip_layer_end = input_args.skip_layer_start + input_args.num_layers_to_skip - 1
-    expt_prefix = f"skip-layers-{input_args.skip_layer_start:02d}-{skip_layer_end:02d}"
-
-    output_dir = "/data/suchith/outputs/maggi/01_nvembed-skip-layers-001"
+    expt_prefix = input_args.skip_func 
+    output_dir = "/data/suchith/outputs/maggi/01_nvembed-skip-layers-002"
 
     save_dir = f"{output_dir}/representations/{input_args.dset_type}/{input_args.dataset}/"
     os.makedirs(save_dir, exist_ok=True)
@@ -149,7 +178,7 @@ if __name__ == '__main__':
 
     # Load configuration
 
-    config = load_config(mname, skip_layer_start=input_args.skip_layer_start, num_layers_to_skip=10)
+    config = load_config(mname, expt_prefix)
 
     # Load model
 
@@ -175,7 +204,7 @@ if __name__ == '__main__':
     # Compute metrics
 
     tst_lbl = sp.load_npz(gt_file)
-    metrics, tst_pred = compute_metrics(tst_repr, lbl_repr, tst_lbl, metric_type="H")
+    metrics, tst_pred = compute_metrics(tst_repr, lbl_repr, tst_lbl, metric_type="M")
     sp.save_npz(f"{pred_dir}/test_predictions_{expt_prefix}.npz", tst_pred)
 
     with open(metric_file, "w") as file:

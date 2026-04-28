@@ -16,6 +16,7 @@ from transformers import AutoConfig
 from xcai.basics import *
 from xcai.metrics import ndcg
 from xcai.maggi.utils import *
+from xcai.models.modeling_utils import Pooling
 from xcai.models.nvembed.NVM0XX import NVM009, NVM0XXConfig, BidirectionalMistralConfig
 
 from xclib.utils.sparse import retain_topk
@@ -38,15 +39,6 @@ def load_config(mname:str):
     for k in hf_config: setattr(config, k, getattr(hf_config, k))
     return config
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', type=str)
-    parser.add_argument('--dset_type', type=str, default="beir")
-    parser.add_argument('--batch_size', type=int, default=16)
-    parser.add_argument('--skip_layer_start', type=int, default=None)
-    parser.add_argument('--num_layers_to_skip', type=int, default=None)
-    return parser.parse_known_args()[0]
-
 def get_msmarco_per_instance_ndcg(fname):
     output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
     repr_dir = f"{output_dir}/representations/beir/msmarco/"
@@ -57,7 +49,7 @@ def get_msmarco_per_instance_ndcg(fname):
     trn_repr = F.normalize(combine_embeddings(f"{repr_dir}/trn_repr.pth", "trn")[:n_trn], dim=1)
     trn_lbl = sp.load_npz(f"/data/datasets/{input_args.dset_type}/{input_args.dataset}/XC/trn_X_Y.npz")[:n_trn]
 
-    metrics, trn_pred = compute_metrics(trn_repr, trn_lbl, lbl_repr, metric_type="M")
+    metrics, trn_pred = compute_metrics(trn_repr, lbl_repr, trn_lbl, metric_type="M")
     metrics = ndcg(trn_pred, trn_lbl, k=10, per_instance=True)
 
     np.save(fname, metrics)
@@ -74,7 +66,7 @@ def load_data(idx, fname):
     _, lbl_info = load_raw_file("/home/sasokan/b-sprabhu/datasets/beir/msmarco/XC/raw_data/label.raw.txt")
     lbl_info = [lbl_info[i] for i in data_lbl.indices]
     
-    data_meta = sp.load_npz("/data/datasets/beir/msmarco/XC/cross_encoder/ce-negatives-topk-05_trn_X_Y_remove-top-10.npz")
+    data_meta = sp.load_npz("/data/outputs/mogicX/54_nvembed-for-msmarco-001/matrices/msmarco/ce-negatives_trn_X_Y_thresh-70.npz")
     data_meta = retain_topk(data_meta[idx], k=5)
 
     _, meta_info = load_raw_file("/home/sasokan/b-sprabhu/datasets/beir/msmarco/XC/raw_data/ce-scores.raw.txt")
@@ -85,22 +77,37 @@ def load_data(idx, fname):
 
     return output
 
-def get_representation(model, dataloader:DataLoader, representation_attribute:str, representation_accumulation_steps:Optional[int]=None, 
-                       to_cpu:Optional[bool]=True):
-    data_host, all_data = None, None
-    
+def get_representation(model, dataloader:DataLoader):
+    model = model.to(torch.bfloat16)
+    model.eval()
+
+    outputs = {"repr": [], "outputs":{}}
     for step, inputs in tqdm(enumerate(dataloader), total=len(dataloader)):
-        inputs = {k: v.to(model.device) for k,v in inputs.items()}
-        with torch.no_grad(): 
-            with torch.amp.autocast(device_type="cuda"):
-                o = model(**inputs, output_hidden_states=True)
+        inputs = {k: v.to(model.device) for k,v in inputs.items() if isinstance(v, torch.Tensor)}
 
-                breakpoint()
+        with torch.no_grad(), torch.amp.autocast(device_type="cuda", dtype=torch.float16):
+            o = model(**inputs, output_hidden_states=True)
 
-            data = getattr(o, representation_attribute)
+        outputs["repr"].append(o.data_repr.to("cpu"))
+        o = o.data_output.hidden_states
+        for i in range(len(o)):
+            outputs["outputs"].setdefault(i, []).append(o[i].to("cpu"))
 
-        if representation_accumulation_steps is not None and (step + 1) % representation_accumulation_steps == 0:
-            pass
+    outputs = {
+        "repr": torch.vstack(outputs["repr"]),
+        "outputs": {k: torch.vstack(v) for k,v in outputs["outputs"].items()},
+    }
+    return outputs
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', type=str)
+    parser.add_argument('--normalize', action="store_true")
+    parser.add_argument('--dset_type', type=str, default="beir")
+    parser.add_argument('--batch_size', type=int, default=16)
+    parser.add_argument('--skip_layer_start', type=int, default=None)
+    parser.add_argument('--num_layers_to_skip', type=int, default=None)
+    return parser.parse_known_args()[0]
 
 # %% ../nbs/37_training-msmarco-distilbert-from-scratch.ipynb 21
 if __name__ == '__main__':
@@ -108,7 +115,7 @@ if __name__ == '__main__':
     # Input arguements
 
     input_args = parse_args()
-    input_args.dset_type, input_args.dataset = "beir", "msmarco"
+    input_args.dset_type, input_args.dataset, input_args.normalize = "beir", "msmarco", True
 
     output_dir = "/data/suchith/outputs/maggi/02_nvembed-score-across-layers-001"
 
@@ -120,6 +127,9 @@ if __name__ == '__main__':
 
     data_dir = f"{output_dir}/data/{input_args.dset_type}/{input_args.dataset}/"
     os.makedirs(data_dir, exist_ok=True)
+
+    example_dir = f"{output_dir}/examples/{input_args.dset_type}/{input_args.dataset}/"
+    os.makedirs(example_dir, exist_ok=True)
 
     instruct_file = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json"
 
@@ -136,6 +146,22 @@ if __name__ == '__main__':
     fname = f"{data_dir}/data.joblib"
     output = joblib.load(fname) if os.path.exists(fname) else load_data(idx, fname)
     data_lbl, data_info, lbl_info, data_meta, meta_info = output
+
+    ## examples
+
+    examples = []
+    for i in range(data_lbl.shape[0]):
+        x, y = data_lbl.indptr[i], data_lbl.indptr[i+1]
+        a, b = data_meta.indptr[i], data_meta.indptr[i+1]
+        example = {
+            "query": data_info[i],
+            "labels": lbl_info[x:y],
+            "negatives": meta_info[a:b],
+        }
+        examples.append(example)
+
+    with open(f"{example_dir}/examples.json", "w") as file:
+        json.dump(examples, file, indent=4)
 
     ## tokenization
 
@@ -154,7 +180,7 @@ if __name__ == '__main__':
         output_dir=output_dir,
         logging_first_step=True,
         per_device_train_batch_size=128,
-        per_device_eval_batch_size=100,
+        per_device_eval_batch_size=4,
         representation_num_beams=200,
         representation_accumulation_steps=10,
         save_strategy="steps",
@@ -213,7 +239,66 @@ if __name__ == '__main__':
         data_collator=identity_collate_fn,
     )
 
-    # Get representation here
+    # Get representation
 
-    output = get_representation(model, lbl_dset, "data_output")
+    fname = f"{state_dir}/train_output.pth"
+    if os.path.exists(fname):
+        trn_output = torch.load(fname)
+    else:
+        trn_output = get_representation(learn.model, learn.get_test_dataloader(trn_dset))
+        torch.save(trn_output, fname)
+
+    fname = f"{state_dir}/label_output.pth"
+    if os.path.exists(fname):
+        lbl_output = torch.load(fname)
+    else:
+        lbl_output = get_representation(learn.model, learn.get_test_dataloader(lbl_dset))
+        torch.save(lbl_output, fname)
+
+    fname = f"{state_dir}/negative_output.pth"
+    if os.path.exists(fname):
+        neg_output = torch.load(fname)
+    else:
+        neg_output = get_representation(learn.model, learn.get_test_dataloader(neg_dset))
+        torch.save(neg_output, fname)
+
+    # Layer-wise similarity
+
+    scores = dict() 
+    for i in tqdm(trn_output["outputs"]):
+        lbl_i = 32  # i
+        trn, lbl, neg = trn_output["outputs"][i], lbl_output["outputs"][lbl_i], neg_output["outputs"][lbl_i]
+
+        pos_scores, neg_scores = [], []
+        for p in range(trn.shape[0]):
+            trn_rep = Pooling.mean_pooling(trn[p:p+1], trn_dset.data.data_info["attention_mask"][p:p+1])
+            trn_rep = F.normalize(trn_rep, dim=1) if input_args.normalize else trn_rep
+
+            x, y = data_lbl.indptr[p], data_lbl.indptr[p+1]
+            lbl_rep = Pooling.mean_pooling(lbl[x:y], lbl_dset.data.data_info["attention_mask"][x:y])
+            lbl_rep = F.normalize(lbl_rep, dim=1) if input_args.normalize else lbl_rep
+
+            x, y = data_meta.indptr[p], data_meta.indptr[p+1]
+            neg_rep = Pooling.mean_pooling(neg[x:y], neg_dset.data.data_info["attention_mask"][x:y])
+            neg_rep = F.normalize(neg_rep, dim=1) if input_args.normalize else neg_rep
+
+            pos_scores.append(trn_rep @ lbl_rep.T)
+            neg_scores.append(trn_rep @ neg_rep.T)
+
+            pos_scores[-1] = pos_scores[-1].squeeze(0)
+            neg_scores[-1] = neg_scores[-1].squeeze(0)
+
+        pos_scores = torch.hstack(pos_scores)
+        neg_scores = torch.hstack(neg_scores)
+
+        scores[i] = {"pos": pos_scores, "neg": neg_scores}
+
+    scores["pos_indices"] = data_lbl.indices
+    scores["pos_indptr"] = data_lbl.indptr
+
+    scores["neg_indices"] = data_meta.indices
+    scores["neg_indptr"] = data_meta.indptr
+
+    fname = f"{metric_dir}/query-i_label-l_scores.joblib"
+    joblib.dump(scores, fname) 
 
