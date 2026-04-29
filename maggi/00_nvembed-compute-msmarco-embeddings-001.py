@@ -46,11 +46,11 @@ if __name__ == '__main__':
     token_dir = f"{output_dir}/tokenized_inputs/{input_args.dset_type}/{input_args.dataset.replace('/', '-')}"
     os.makedirs(token_dir, exist_ok=True)
 
-    instruction = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json"
-    input_args.save_suffix = None 
-
     # instruction = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json"
-    # input_args.save_suffix = "phrase-aug"
+    # input_args.save_suffix = None 
+
+    instruction = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json"
+    input_args.save_suffix = "phrase-aug-random"
 
     # instruction = "Given a multi-hop question, retrieve phrases relevant to the question"
     # input_args.save_suffix = "phrase-lbl"
@@ -87,7 +87,7 @@ if __name__ == '__main__':
             dataset = joblib.load(fname)
         else:
             qry_info_file = f"{data_dir}/raw_data/test.raw.csv"
-            # qry_info_file = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/raw_data/multihop/musique/test_phrase_topk_sorted.raw.txt"
+            qry_info_file = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/raw_data/multihop/musique/test_phrase_topk-random.raw.txt"
             dataset = tokenized_query(qry_info_file, input_args.idx, input_args.parts, instruction, input_args.dataset, 
 				      model_name=mname)
             joblib.dump(dataset, fname)

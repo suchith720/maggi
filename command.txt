@@ -1,1 +1,2 @@
 python maggi/00_nvembed-metric-from-embeddings-002.py --dataset musique --dset_type multihop --normalize --phr_pred
+CUDA_VISIBLE_DEVICES=2 python maggi/00_nvembed-compute-msmarco-embeddings-001.py --idx 0 --parts 1 --get_tst_repr --dataset musique --batch_size 16 --dset_type multihop

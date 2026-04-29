@@ -12,19 +12,39 @@ if __name__ == "__main__":
     meta_file = "/data/datasets/multihop/musique/XC/raw_data/phrase.raw.csv"
     meta_ids, meta_txt = load_raw_file(meta_file)
 
-    dm_file = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/predictions/multihop/musique/test_predictions_phrase.npz"
+    dm_file = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/predictions/multihop/musique/test_phrases.npz"
     data_meta = retain_topk(sp.load_npz(dm_file), k=5)
+
+    meta_order = "random"
+
+    # ----------------------------------------
+    # ----------------------------------------
 
     aug_txt = []
     for q,r in zip(data_txt, data_meta):
-        sort_idx = np.argsort(r.data)[::-1]
-        indices = r.indices[sort_idx]
+
+        if meta_order == "sorted":
+            idx = np.argsort(r.data)[::-1]
+        elif meta_order == "random":
+            idx = np.random.permutation(len(r.data))
+        else:
+            raise ValueError(f"Invalid order type: {meta_order}.")
+
+        indices = r.indices[idx]
         txt = q + " [SEP] " + " [SEP] ".join([meta_txt[i] for i in indices])
         aug_txt.append(txt)
 
     save_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/raw_data/multihop/musique/"
     os.makedirs(save_dir, exist_ok=True)
-    save_raw_file(f"{save_dir}/test_phrase_topk_sorted.raw.txt", data_ids, aug_txt)
+
+    if meta_order == "sorted":
+        raw_file = f"{save_dir}/test_phrase_topk-sorted.raw.txt"
+        exp_file = f"{save_dir}/examples_phrase_topk-sorted.json"
+    elif meta_order == "random":
+        raw_file = f"{save_dir}/test_phrase_topk-random.raw.txt"
+        exp_file = f"{save_dir}/examples_phrase_topk-random.json"
+
+    save_raw_file(raw_file, data_ids, aug_txt)
 
     # Save examples
 
@@ -41,7 +61,6 @@ if __name__ == "__main__":
         }
         examples.append(example)
 
-    fname = f"{save_dir}/examples_phrase_topk_sorted.json"
-    with open(fname, "w") as file:
+    with open(exp_file, "w") as file:
         json.dump(examples, file, indent=4)
 
