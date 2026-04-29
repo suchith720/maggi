@@ -11,7 +11,6 @@ def parse_args():
     parser.add_argument('--phr_pred', action='store_true')
 
     parser.add_argument('--save_suffix', type=str, default=None)
-    parser.add_argument('--save_prefix', type=str, default=None)
     return parser.parse_known_args()[0]
 
 if __name__ == "__main__":
