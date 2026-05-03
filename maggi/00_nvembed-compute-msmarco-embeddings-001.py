@@ -15,6 +15,10 @@ from xcai.models.nvembed.NVM0XX import NVM009, NVM0XXConfig
 # %% ../nbs/37_training-msmarco-distilbert-from-scratch.ipynb 4
 os.environ['WANDB_PROJECT'] = 'maggi_00-msmarco-00'
 
+def none_or_str(value):
+    if value == "None":return None
+    return value
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=str)
@@ -23,6 +27,9 @@ def parse_args():
 
     parser.add_argument('--dset_type', type=str, default="beir")
     parser.add_argument('--save_suffix', type=str, default=None)
+
+    parser.add_argument('--instruction', type=none_or_str, default=None)
+    parser.add_argument('--qry_info_file', type=none_or_str, default=None)
 
     parser.add_argument('--get_lbl_repr', action='store_true')
     parser.add_argument('--get_phr_repr', action='store_true')
@@ -38,16 +45,20 @@ if __name__ == '__main__':
     input_args = parse_args()
 
     # output_dir = "/home/sasokan/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
-    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
+    output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
 
     save_dir = f"{output_dir}/representations/{input_args.dset_type}/{input_args.dataset}/"
-    data_dir = f"/data/datasets/{input_args.dset_type}/{input_args.dataset.replace('/', '-')}/XC/"
+    data_dir = f"/data/datasets/{input_args.dset_type}/{input_args.dataset}/XC/"
 
     token_dir = f"{output_dir}/tokenized_inputs/{input_args.dset_type}/{input_args.dataset.replace('/', '-')}"
     os.makedirs(token_dir, exist_ok=True)
 
-    instruction = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json"
-    input_args.save_suffix = None 
+    if input_args.instruction is None:
+        instruction = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json"
+        input_args.save_suffix = None 
+
+    # instruction = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json"
+    # input_args.save_suffix = "category-gpt-linker"
 
     # instruction = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json"
     # input_args.save_suffix = "phrase-aug-random"
@@ -86,8 +97,9 @@ if __name__ == '__main__':
         if os.path.exists(fname):
             dataset = joblib.load(fname)
         else:
-            qry_info_file = f"{data_dir}/raw_data/test.raw.csv"
+            if input_args.qry_info_file is None: qry_info_file = f"{data_dir}/raw_data/test.raw.csv"
             # qry_info_file = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/raw_data/multihop/musique/test_phrase_topk-random.raw.txt"
+            # qry_info_file = f"/data/datasets/{input_args.dset_type}/metadata/{input_args.dataset}/raw_data/test_gpt-category-linker.raw.csv"
             dataset = tokenized_query(qry_info_file, input_args.idx, input_args.parts, instruction, input_args.dataset, 
 				      model_name=mname)
             joblib.dump(dataset, fname)

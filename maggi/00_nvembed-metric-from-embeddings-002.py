@@ -19,15 +19,15 @@ if __name__ == "__main__":
 
     # output_dir = "/home/sasokan/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
     # output_dir = "/home/sasokan/b-sprabhu/outputs/mogicX/54_nvembed-for-msmarco-001/"
-    # output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
-    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
+    output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
+    # output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
 
     repr_dir = f"{output_dir}/representations/{input_args.dset_type}/{input_args.dataset}"
     metric_dir = f"{output_dir}/metrics/{input_args.dset_type}"
 
     if input_args.phr_pred: input_args.repr_suffix = "phrase-lbl"
     repr_suffix = "" if input_args.repr_suffix is None else f"_{input_args.repr_suffix}"
-    save_suffix = "" if input_args.save_suffix is None or input_args.phr_repr else f"-{input_args.save_suffix}"
+    save_suffix = "" if input_args.save_suffix is None or input_args.phr_pred else f"-{input_args.save_suffix}"
 
     # Load embeddings
 
