@@ -31,7 +31,7 @@ else
 	qry_info_file=None
 fi
 
-n_gpu=4
+n_gpu=2
 batch_size=16
 
 for i in $(seq 0 $((n_gpu -1)))
@@ -43,6 +43,10 @@ do
 	elif [ $role == "phr" ]
 	then
 		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_phr_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type &
+
+	elif [ $role == "ent" ]
+	then
+		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_ent_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type &
 
 	elif [ $role == "tst" ]
 	then

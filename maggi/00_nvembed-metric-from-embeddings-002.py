@@ -8,7 +8,10 @@ def parse_args():
     parser.add_argument('--dset_type', type=str, default="beir")
     parser.add_argument('--train', action='store_true')
     parser.add_argument('--normalize', action='store_true')
+
     parser.add_argument('--phr_pred', action='store_true')
+    parser.add_argument('--ent_pred', action='store_true')
+    parser.add_argument('--similarity', action='store_true')
 
     parser.add_argument('--repr_suffix', type=str, default=None)
     parser.add_argument('--save_suffix', type=str, default=None)
@@ -31,44 +34,53 @@ if __name__ == "__main__":
 
     # Load embeddings
 
-    lbl_file = f"{repr_dir}/phr_repr.pth" if input_args.phr_pred else f"{repr_dir}/lbl_repr.pth"
-    lbl_role = "phr" if input_args.phr_pred else "lbl"
+    if input_args.phr_pred:
+        lbl_file, lbl_role, lbl_name = f"{repr_dir}/phr_repr.pth", "phr", "phrases"
+    elif input_args.ent_pred:
+        lbl_file, lbl_role, lbl_name = f"{repr_dir}/ent_repr.pth", "ent", "entities"
+    else:
+        lbl_file, lbl_role, lbl_name = f"{repr_dir}/lbl_repr.pth", "lbl", "labels"
 
     lbl_repr = combine_embeddings(lbl_file, lbl_role)
     lbl_repr = F.normalize(lbl_repr, dim=1) if input_args.normalize else lbl_repr
 
-    tst_repr = combine_embeddings(f"{repr_dir}/tst_repr{repr_suffix}.pth", "tst", repr_suffix)
-    tst_repr = F.normalize(tst_repr, dim=1) if input_args.normalize else tst_repr
-    tst_lbl = None if input_args.phr_pred else sp.load_npz(f"/data/datasets/{input_args.dset_type}/{input_args.dataset}/XC/tst_X_Y.npz")
+    if input_args.similarity:
+        pred_dir = f"{output_dir}/predictions/{input_args.dset_type}/{input_args.dataset}"
+        _, lbl_lbl = compute_metrics(lbl_repr, lbl_repr)
+        sp.save_npz(f"{pred_dir}/{lbl_name}_{lbl_name}.npz", lbl_lbl)
 
-    if input_args.train:
-        trn_repr = combine_embeddings(f"{repr_dir}/trn_repr{repr_suffix}.pth", "trn", repr_suffix)
-        trn_repr = F.normalize(trn_repr, dim=1) if input_args.normalize else trn_repr
-        trn_lbl = None if input_args.phr_pred else sp.load_npz(f"/data/datasets/{input_args.dset_type}/{input_args.dataset}/XC/trn_X_Y.npz")
+    else:
+        tst_repr = combine_embeddings(f"{repr_dir}/tst_repr{repr_suffix}.pth", "tst", repr_suffix)
+        tst_repr = F.normalize(tst_repr, dim=1) if input_args.normalize else tst_repr
+        tst_lbl = None if input_args.phr_pred else sp.load_npz(f"/data/datasets/{input_args.dset_type}/{input_args.dataset}/XC/tst_X_Y.npz")
 
-    # Prediction
+        if input_args.train:
+            trn_repr = combine_embeddings(f"{repr_dir}/trn_repr{repr_suffix}.pth", "trn", repr_suffix)
+            trn_repr = F.normalize(trn_repr, dim=1) if input_args.normalize else trn_repr
+            trn_lbl = None if input_args.phr_pred else sp.load_npz(f"/data/datasets/{input_args.dset_type}/{input_args.dataset}/XC/trn_X_Y.npz")
 
-    pred_dir = f"{output_dir}/predictions/{input_args.dset_type}/{input_args.dataset}"
-    os.makedirs(pred_dir, exist_ok=True)
+        # Prediction
 
-    metric_type = "H" if input_args.dset_type == "multihop" else "M"
-    label_name = "phrases" if input_args.phr_pred else "labels"
+        pred_dir = f"{output_dir}/predictions/{input_args.dset_type}/{input_args.dataset}"
+        os.makedirs(pred_dir, exist_ok=True)
 
-    metrics, tst_pred = compute_metrics(tst_repr, lbl_repr, tst_lbl, metric_type=metric_type)
-    sp.save_npz(f"{pred_dir}/test{save_suffix}_{label_name}.npz", tst_pred)
+        metric_type = "H" if input_args.dset_type == "multihop" else "M"
 
-    if input_args.train:
-        m, trn_pred = compute_metrics(trn_repr, lbl_repr, trn_lbl, metric_type=metric_type)
-        sp.save_npz(f"{pred_dir}/train{save_suffix}_{label_name}.npz", trn_pred)
-        if metrics is not None: metrics = {"train": m, "test": metrics}
+        metrics, tst_pred = compute_metrics(tst_repr, lbl_repr, tst_lbl, metric_type=metric_type)
+        sp.save_npz(f"{pred_dir}/test{save_suffix}_{lbl_name}.npz", tst_pred)
 
-    # Save metrics
+        if input_args.train:
+            m, trn_pred = compute_metrics(trn_repr, lbl_repr, trn_lbl, metric_type=metric_type)
+            sp.save_npz(f"{pred_dir}/train{save_suffix}_{lbl_name}.npz", trn_pred)
+            if metrics is not None: metrics = {"train": m, "test": metrics}
 
-    if metrics is not None:
-        os.makedirs(metric_dir, exist_ok=True)
-        metric_file = f"{metric_dir}/{input_args.dataset}{repr_suffix}.json"
-        with open(metric_file, "w") as file:
-            json.dump(metrics, file, indent=4)
+        # Save metrics
 
-        print(metrics)
+        if metrics is not None:
+            os.makedirs(metric_dir, exist_ok=True)
+            metric_file = f"{metric_dir}/{input_args.dataset}{repr_suffix}.json"
+            with open(metric_file, "w") as file:
+                json.dump(metrics, file, indent=4)
+
+            print(metrics)
 

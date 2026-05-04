@@ -33,6 +33,7 @@ def parse_args():
 
     parser.add_argument('--get_lbl_repr', action='store_true')
     parser.add_argument('--get_phr_repr', action='store_true')
+    parser.add_argument('--get_ent_repr', action='store_true')
     parser.add_argument('--get_tst_repr', action='store_true')
     parser.add_argument('--get_trn_repr', action='store_true')
 
@@ -89,6 +90,15 @@ if __name__ == '__main__':
             dataset = joblib.load(fname)
         else:
             lbl_info_file = f"{data_dir}/raw_data/phrase.raw.csv"
+            dataset = tokenized_labels(lbl_info_file, input_args.idx, input_args.parts, model_name=mname, max_length=64)
+            joblib.dump(dataset, fname)
+
+    elif input_args.get_ent_repr:
+        fname = f"{token_dir}/entity{lbl_suffix}.joblib"
+        if os.path.exists(fname):
+            dataset = joblib.load(fname)
+        else:
+            lbl_info_file = f"{data_dir}/raw_data/entity.raw.csv"
             dataset = tokenized_labels(lbl_info_file, input_args.idx, input_args.parts, model_name=mname, max_length=64)
             joblib.dump(dataset, fname)
 
@@ -196,6 +206,9 @@ if __name__ == '__main__':
 
     elif input_args.get_phr_repr: 
         get_and_save_representation(learn, dataset, f'{save_dir}/phr_repr{lbl_suffix}.pth')
+
+    elif input_args.get_ent_repr: 
+        get_and_save_representation(learn, dataset, f'{save_dir}/ent_repr{lbl_suffix}.pth')
 
     elif input_args.get_tst_repr: 
         get_and_save_representation(learn, dataset, f'{save_dir}/tst_repr{qry_suffix}.pth')
