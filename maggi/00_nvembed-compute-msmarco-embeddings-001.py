@@ -46,7 +46,8 @@ if __name__ == '__main__':
     input_args = parse_args()
 
     # output_dir = "/home/sasokan/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
-    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
+    # output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
+    output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002"
 
     save_dir = f"{output_dir}/representations/{input_args.dset_type}/{input_args.dataset}/"
     data_dir = f"/data/datasets/{input_args.dset_type}/{input_args.dataset}/XC/"
@@ -89,7 +90,7 @@ if __name__ == '__main__':
         if os.path.exists(fname):
             dataset = joblib.load(fname)
         else:
-            lbl_info_file = f"{data_dir}/raw_data/fact.raw.csv"
+            lbl_info_file = f"{data_dir}/raw_data/hipporag-fact.raw.csv"
             dataset = tokenized_labels(lbl_info_file, input_args.idx, input_args.parts, model_name=mname, max_length=64)
             joblib.dump(dataset, fname)
 

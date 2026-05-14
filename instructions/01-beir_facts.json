@@ -1,0 +1,72 @@
+{
+    "ClimateFEVER":
+            {
+                "query": "Given a claim about climate change, retrieve facts that support or refute the claim",
+                "corpus": ""
+            },
+    "HotpotQA":
+        {
+            "query": "Given a multi-hop question, retrieve facts that can help answer the question",
+            "corpus": ""
+        },
+    "FEVER":
+        {
+            "query": "Given a claim, retrieve facts that support or refute the claim",
+            "corpus": ""
+        },
+    "MSMARCO":
+        {
+            "query": "Given a web search query, retrieve relevant facts that answer the query",
+            "corpus": ""
+        },
+    "DBPedia":
+        {
+            "query": "Given a query, retrieve relevant facts",
+            "corpus": ""
+        },
+    "NQ":
+        {
+            "query": "Given a question, retrieve facts that answer the question",
+            "corpus": ""
+        },
+    "SCIDOCS":
+        {
+            "query": "Given a scientific paper title, retrieve paper facts that helps retrieve abstracts that are cited by the given paper",
+            "corpus": ""
+        },
+    "TRECCOVID":
+        {
+            "query": "Given a query on COVID-19, retrieve facts that answer the query",
+            "corpus": ""
+        },
+    "Touche2020":
+        {
+            "query": "Given a question, retrieve facts that answer the question",
+            "corpus": ""
+        },
+    "SciFact":
+        {
+            "query": "Given a scientific claim, retrieve facts that support or refute the claim",
+            "corpus": ""
+        },
+    "NFCorpus":
+        {
+            "query": "Given a question, retrieve relevant facts that answer the question",
+            "corpus": ""
+        },
+    "ArguAna":
+        {
+            "query": "Given a claim, retrieve facts that support or refute the claim",
+            "corpus": ""
+        },
+    "FiQA2018":
+        {
+            "query": "Given a financial question, retrieve relevant facts that answer the query",
+            "corpus": ""
+        },
+    "MuSiQue":
+        {
+            "query": "Given a multi-hop question, retrieve facts that can help answer the question",
+            "corpus": ""
+        }
+}

@@ -1,4 +1,5 @@
-datasets="arguana fiqa msmarco nfcorpus scidocs scifact trec-covid webis-touche2020"
+# datasets="arguana fiqa msmarco nfcorpus scidocs scifact trec-covid webis-touche2020"
+datasets="fiqa msmarco nfcorpus scidocs scifact trec-covid webis-touche2020"
 dset_type="beir"
 
 # datasets="musique"
@@ -46,7 +47,10 @@ then
 	do
 		echo $dataset
 	
+		instruction="/home/sasokan/suchith/maggi/instructions/01-beir_facts.json"
+
 		bash scripts/00-nvembed_inference.sh $dataset fct $dset_type
-		python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --repr_suffix category-gpt5-linker --save_suffix category-gpt5-linker
+		bash scripts/00-nvembed_inference.sh $dataset tst $dset_type  fact-lbl $instruction
+		python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --fct_pred
 	done
 fi
