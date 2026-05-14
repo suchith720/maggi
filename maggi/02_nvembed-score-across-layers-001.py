@@ -4,7 +4,7 @@
 __all__ = []
 
 # %% ../nbs/37_training-msmarco-distilbert-from-scratch.ipynb 2
-import os, torch, json, torch.multiprocessing as mp, joblib, numpy as np
+import os, torch, json, torch.multiprocessing as mp, joblib, numpy as np, math
 import scipy.sparse as sp, argparse, math, torch.nn.functional as F
 
 from typing import Optional
@@ -18,6 +18,7 @@ from xcai.metrics import ndcg
 from xcai.maggi.utils import *
 from xcai.models.modeling_utils import Pooling
 from xcai.models.nvembed.NVM0XX import NVM009, NVM0XXConfig, BidirectionalMistralConfig
+from xcai.sdata import SXCDataset, SMainXCDataset
 
 from xclib.utils.sparse import retain_topk
 
@@ -117,7 +118,7 @@ if __name__ == '__main__':
     input_args = parse_args()
     input_args.dset_type, input_args.dataset, input_args.normalize = "beir", "msmarco", True
 
-    output_dir = "/data/suchith/outputs/maggi/02_nvembed-score-across-layers-001"
+    output_dir = "/data/suchith/outputs/maggi/02_nvembed-score-across-layers-002"
 
     state_dir = f"{output_dir}/hidden_states/{input_args.dset_type}/{input_args.dataset}/"
     os.makedirs(state_dir, exist_ok=True)
@@ -141,7 +142,7 @@ if __name__ == '__main__':
 
     fname = f"{metric_dir}/trn_ndcg"
     metrics = np.load(fname + ".npy") if os.path.exists(fname + ".npy") else get_msmarco_per_instance_ndcg(fname)
-    idx = np.argsort(metrics[:, -1])[::-1][:10]
+    idx = np.argsort(metrics[:, -1])[::-1][:100]
 
     fname = f"{data_dir}/data.joblib"
     output = joblib.load(fname) if os.path.exists(fname) else load_data(idx, fname)
@@ -241,26 +242,42 @@ if __name__ == '__main__':
 
     # Get representation
 
+    def repr_func(fname, dset):
+        if os.path.exists(fname):
+            output = torch.load(fname)
+        else:
+            output = get_representation(learn.model, learn.get_test_dataloader(dset))
+            torch.save(output, fname)
+        return output
+
+
+    def repr_parts(fname, dset, n):
+        output = list()
+        n = math.ceil(len(dset)/n)
+        for i in range(n):
+            file = fname.format(i=i)
+
+            if os.path.exists(file):
+                output = torch.load(file)
+            else:
+                lbl_info = {k: v[i*n:(i+1)*n] for k,v in lbl_dset.data.data_info.items()}
+                o = repr_func(fname, SXCDataset(SMainXCDataset(data_info=lbl_info)))
+                output.append(o)
+                torch.save(output, file)
+
+        output = torch.hstack(output)
+        return output
+
     fname = f"{state_dir}/train_output.pth"
-    if os.path.exists(fname):
-        trn_output = torch.load(fname)
-    else:
-        trn_output = get_representation(learn.model, learn.get_test_dataloader(trn_dset))
-        torch.save(trn_output, fname)
+    trn_output = repr_func(fname, trn_dset)
 
+    # fname = f"{state_dir}/label_output_" + "{i:02d}.pth"
     fname = f"{state_dir}/label_output.pth"
-    if os.path.exists(fname):
-        lbl_output = torch.load(fname)
-    else:
-        lbl_output = get_representation(learn.model, learn.get_test_dataloader(lbl_dset))
-        torch.save(lbl_output, fname)
+    lbl_output = repr_func(fname, lbl_dset)
 
-    fname = f"{state_dir}/negative_output.pth"
-    if os.path.exists(fname):
-        neg_output = torch.load(fname)
-    else:
-        neg_output = get_representation(learn.model, learn.get_test_dataloader(neg_dset))
-        torch.save(neg_output, fname)
+    # fname = f"{state_dir}/negative_output_" + "{i:02d}.pth"
+    fname = f"{state_dir}/negative_output.pth" 
+    neg_output = repr_func(fname, neg_dset)
 
     # Layer-wise similarity
 
