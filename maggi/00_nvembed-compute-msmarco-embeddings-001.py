@@ -32,7 +32,7 @@ def parse_args():
     parser.add_argument('--qry_info_file', type=none_or_str, default=None)
 
     parser.add_argument('--get_lbl_repr', action='store_true')
-    parser.add_argument('--get_phr_repr', action='store_true')
+    parser.add_argument('--get_fct_repr', action='store_true')
     parser.add_argument('--get_ent_repr', action='store_true')
     parser.add_argument('--get_tst_repr', action='store_true')
     parser.add_argument('--get_trn_repr', action='store_true')
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     input_args = parse_args()
 
     # output_dir = "/home/sasokan/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
-    output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
+    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
 
     save_dir = f"{output_dir}/representations/{input_args.dset_type}/{input_args.dataset}/"
     data_dir = f"/data/datasets/{input_args.dset_type}/{input_args.dataset}/XC/"
@@ -54,9 +54,7 @@ if __name__ == '__main__':
     token_dir = f"{output_dir}/tokenized_inputs/{input_args.dset_type}/{input_args.dataset.replace('/', '-')}"
     os.makedirs(token_dir, exist_ok=True)
 
-    if input_args.instruction is None:
-        instruction = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json"
-        input_args.save_suffix = None 
+    instruction = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json" if input_args.instruction is None else input_args.instruction
 
     # instruction = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json"
     # input_args.save_suffix = "category-gpt-linker"
@@ -64,10 +62,12 @@ if __name__ == '__main__':
     # instruction = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json"
     # input_args.save_suffix = "phrase-aug-random"
 
-    # instruction = "Given a multi-hop question, retrieve phrases relevant to the question"
-    # input_args.save_suffix = "phrase-lbl"
+    # instruction = "Given a multi-hop question, retrieve facts relevant to the question"
+    # input_args.save_suffix = "fact-lbl"
 
     mname = 'nvidia/NV-Embed-v2'
+
+    # data_dir = "/home/sasokan/suchith/HippoRAG/reproduce/dataset/musique"
 
     lbl_suffix = f"_{input_args.idx:02d}-{input_args.parts:02d}" if input_args.parts > 1 else ""
     if input_args.save_suffix is not None:
@@ -84,12 +84,12 @@ if __name__ == '__main__':
             dataset = tokenized_labels(lbl_info_file, input_args.idx, input_args.parts, model_name=mname)
             joblib.dump(dataset, fname)
 
-    elif input_args.get_phr_repr:
-        fname = f"{token_dir}/phrase{lbl_suffix}.joblib"
+    elif input_args.get_fct_repr:
+        fname = f"{token_dir}/fact{lbl_suffix}.joblib"
         if os.path.exists(fname):
             dataset = joblib.load(fname)
         else:
-            lbl_info_file = f"{data_dir}/raw_data/phrase.raw.csv"
+            lbl_info_file = f"{data_dir}/raw_data/fact.raw.csv"
             dataset = tokenized_labels(lbl_info_file, input_args.idx, input_args.parts, model_name=mname, max_length=64)
             joblib.dump(dataset, fname)
 
@@ -107,9 +107,10 @@ if __name__ == '__main__':
         if os.path.exists(fname):
             dataset = joblib.load(fname)
         else:
-            if input_args.qry_info_file is None: qry_info_file = f"{data_dir}/raw_data/test.raw.csv"
+            qry_info_file = f"{data_dir}/raw_data/test.raw.csv" if input_args.qry_info_file is None else input_args.qry_info_file
             # qry_info_file = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/raw_data/multihop/musique/test_phrase_topk-random.raw.txt"
             # qry_info_file = f"/data/datasets/{input_args.dset_type}/metadata/{input_args.dataset}/raw_data/test_gpt-category-linker.raw.csv"
+            # qry_info_file = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/raw_data/multihop/musique-hipporag/test_fact_topk-sorted.raw.txt"
             dataset = tokenized_query(qry_info_file, input_args.idx, input_args.parts, instruction, input_args.dataset, 
 				      model_name=mname)
             joblib.dump(dataset, fname)
@@ -204,8 +205,8 @@ if __name__ == '__main__':
     if input_args.get_lbl_repr: 
         get_and_save_representation(learn, dataset, f'{save_dir}/lbl_repr{lbl_suffix}.pth')
 
-    elif input_args.get_phr_repr: 
-        get_and_save_representation(learn, dataset, f'{save_dir}/phr_repr{lbl_suffix}.pth')
+    elif input_args.get_fct_repr: 
+        get_and_save_representation(learn, dataset, f'{save_dir}/fct_repr{lbl_suffix}.pth')
 
     elif input_args.get_ent_repr: 
         get_and_save_representation(learn, dataset, f'{save_dir}/ent_repr{lbl_suffix}.pth')

@@ -4,17 +4,20 @@ from sugar.core import load_raw_file, save_raw_file
 
 from xclib.utils.sparse import retain_topk
 
-def musique_metadata():
-    data_file = "/data/datasets/multihop/musique/XC/raw_data/test.raw.csv"
+def musique_metadata(data_dir, output_dir, dset):
+    data_file = f"{data_dir}/raw_data/test.raw.csv"
     data_ids, data_txt = load_raw_file(data_file)
 
-    meta_file = "/data/datasets/multihop/musique/XC/raw_data/phrase.raw.csv"
+    meta_file = f"{data_dir}/raw_data/fact.raw.csv"
     meta_ids, meta_txt = load_raw_file(meta_file)
 
-    dm_file = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/predictions/multihop/musique/test_phrases.npz"
+    dm_file = f"{output_dir}/predictions/multihop/{dset}/test_facts.npz"
     data_meta = retain_topk(sp.load_npz(dm_file), k=5)
 
-    meta_order = "random"
+    assert len(data_ids) == data_meta.shape[0]
+    assert len(meta_ids) == data_meta.shape[1]
+
+    meta_order = "sorted"
 
     # ----------------------------------------
     # ----------------------------------------
@@ -33,15 +36,15 @@ def musique_metadata():
         txt = q + " [SEP] " + " [SEP] ".join([meta_txt[i] for i in indices])
         aug_txt.append(txt)
 
-    save_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/raw_data/multihop/musique/"
+    save_dir = f"{output_dir}/raw_data/multihop/{dset}/"
     os.makedirs(save_dir, exist_ok=True)
 
     if meta_order == "sorted":
-        raw_file = f"{save_dir}/test_phrase_topk-sorted.raw.txt"
-        exp_file = f"{save_dir}/examples_phrase_topk-sorted.json"
+        raw_file = f"{save_dir}/test_fact_topk-sorted.raw.txt"
+        exp_file = f"{save_dir}/examples_fact_topk-sorted.json"
     elif meta_order == "random":
-        raw_file = f"{save_dir}/test_phrase_topk-random.raw.txt"
-        exp_file = f"{save_dir}/examples_phrase_topk-random.json"
+        raw_file = f"{save_dir}/test_fact_topk-random.raw.txt"
+        exp_file = f"{save_dir}/examples_fact_topk-random.json"
 
     save_raw_file(raw_file, data_ids, aug_txt)
 
@@ -65,6 +68,7 @@ def musique_metadata():
 
 
 from typing import List, Optional
+
 def save_file_for_generations(fname, inputs:List, sep:Optional[str]="\t", encoding:Optional[str]='utf-8'):
     sizes = np.array([len(o) for o in inputs])
     assert np.all(sizes == sizes[0]), "Number of elements in each input should be the same."
@@ -80,21 +84,29 @@ def musique_metadata_filtering():
     data_file = "/data/datasets/multihop/musique/XC/raw_data/test.raw.csv"
     data_ids, data_txt = load_raw_file(data_file)
 
-    meta_file = "/data/datasets/multihop/musique/XC/raw_data/phrase.raw.csv"
+    meta_file = "/data/datasets/multihop/musique/XC/raw_data/fact.raw.csv"
     meta_ids, meta_txt = load_raw_file(meta_file)
 
-    dm_file = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/predictions/multihop/musique/test_phrases.npz"
+    dm_file = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/predictions/multihop/musique/test_facts.npz"
     data_meta = retain_topk(sp.load_npz(dm_file), k=5)
 
     data_meta_txt = [json.dumps([meta_txt[i] for i in o.indices]) for o in data_meta]
     assert len(data_meta_txt) == len(data_txt)
 
     save_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/raw_data/multihop/musique/"
-    save_file_for_generations(f"{save_dir}/test_phrase_filtering.raw.txt", [data_ids, data_txt, data_meta_txt])
+    save_file_for_generations(f"{save_dir}/test_facts_filtering.raw.txt", [data_ids, data_txt, data_meta_txt])
 
 
 if __name__ == "__main__":
-    # musique_metadata()
+    # data_dir = "/data/datasets/multihop/musique/XC/"
+    # output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/predictions/multihop"
+    # dset = "musique"
+    # musique_metadata(data_dir, output_dir, dset)
 
-    musique_metadata_filtering()
+    data_dir = "/home/sasokan/suchith/HippoRAG/reproduce/dataset/musique"
+    output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
+    dset = "musique-hipporag"
+    musique_metadata(data_dir, output_dir, dset)
+
+    # musique_metadata_filtering()
 

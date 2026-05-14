@@ -266,7 +266,7 @@ if __name__ == '__main__':
 
     scores = dict() 
     for i in tqdm(trn_output["outputs"]):
-        lbl_i = 32  # i
+        lbl_i = i  # 32
         trn, lbl, neg = trn_output["outputs"][i], lbl_output["outputs"][lbl_i], neg_output["outputs"][lbl_i]
 
         pos_scores, neg_scores = [], []
@@ -299,6 +299,6 @@ if __name__ == '__main__':
     scores["neg_indices"] = data_meta.indices
     scores["neg_indptr"] = data_meta.indptr
 
-    fname = f"{metric_dir}/query-i_label-l_scores.joblib"
+    fname = f"{metric_dir}/query-i_label-i_scores.joblib"
     joblib.dump(scores, fname) 
 
