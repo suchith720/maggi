@@ -1,5 +1,4 @@
 # datasets="arguana fiqa msmarco nfcorpus scidocs scifact trec-covid webis-touche2020"
-
 datasets="fiqa msmarco nfcorpus scidocs scifact trec-covid webis-touche2020"
 dset_type="beir"
 
