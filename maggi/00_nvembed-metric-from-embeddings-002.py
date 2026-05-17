@@ -16,6 +16,8 @@ def parse_args():
     parser.add_argument('--related_query', action='store_true')
     parser.add_argument('--exact', action='store_true')
 
+    parser.add_argument('--lbl_rep_file', type=str, default=None)
+
     parser.add_argument('--repr_suffix', type=str, default=None)
     parser.add_argument('--save_suffix', type=str, default=None)
     return parser.parse_known_args()[0]
@@ -62,6 +64,7 @@ if __name__ == "__main__":
             lbl_file, lbl_role, lbl_name = f"{repr_dir}/ent_repr.pth", "ent", "entities"
         else:
             lbl_file, lbl_role, lbl_name = f"{repr_dir}/lbl_repr.pth", "lbl", "labels"
+            if input_args.lbl_rep_file is not None: lbl_file = input_args.lbl_rep_file
 
         lbl_repr = combine_embeddings(lbl_file, lbl_role)
         lbl_repr = F.normalize(lbl_repr, dim=1) if input_args.normalize else lbl_repr

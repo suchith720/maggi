@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     # output_dir = "/home/sasokan/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
     # output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001"
-    output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002"
+    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002"
 
     save_dir = f"{output_dir}/representations/{input_args.dset_type}/{input_args.dataset}/"
     data_dir = f"/data/datasets/{input_args.dset_type}/{input_args.dataset}/XC/"

@@ -1,26 +1,28 @@
 import scipy.sparse as sp, numpy as np, os, json
+from tqdm.auto import tqdm
 
 from sugar.core import load_raw_file, save_raw_file
 
 from xclib.utils.sparse import retain_topk
+from typing import List, Optional
 
-def musique_metadata(data_dir, output_dir, dset):
-    data_file = f"{data_dir}/raw_data/test.raw.csv"
+
+def early_concate_metadata(data_dir:str, output_dir:str, dset_type:str, dset_name:str, meta_order:Optional[str]="sorted"):
+    meta_name = "hipporag-fact"
+
+    data_file = f"{data_dir}/{dset_type}/{dset_name}/XC/raw_data/test.raw.csv"
     data_ids, data_txt = load_raw_file(data_file)
 
-    meta_file = f"{data_dir}/raw_data/fact.raw.csv"
+    meta_file = f"{data_dir}/{dset_type}/{dset_name}/XC/raw_data/{meta_name}.raw.csv"
     meta_ids, meta_txt = load_raw_file(meta_file)
 
-    dm_file = f"{output_dir}/predictions/multihop/{dset}/test_facts.npz"
+    dm_file = f"{output_dir}/predictions/{dset_type}/{dset_name}/test_facts.npz"
     data_meta = retain_topk(sp.load_npz(dm_file), k=5)
 
     assert len(data_ids) == data_meta.shape[0]
     assert len(meta_ids) == data_meta.shape[1]
 
-    meta_order = "sorted"
-
-    # ----------------------------------------
-    # ----------------------------------------
+    # Augment metadata to the raw file
 
     aug_txt = []
     for q,r in zip(data_txt, data_meta):
@@ -36,7 +38,7 @@ def musique_metadata(data_dir, output_dir, dset):
         txt = q + " [SEP] " + " [SEP] ".join([meta_txt[i] for i in indices])
         aug_txt.append(txt)
 
-    save_dir = f"{output_dir}/raw_data/multihop/{dset}/"
+    save_dir = f"{output_dir}/raw_data/{dset_type}/{dset_name}/"
     os.makedirs(save_dir, exist_ok=True)
 
     if meta_order == "sorted":
@@ -59,15 +61,13 @@ def musique_metadata(data_dir, output_dir, dset):
         indices, scores = data_meta[idx].indices[sort_idx], data_meta[idx].data[sort_idx]
         example = {
             "query": data_txt[idx], 
-            "phrases": [(meta_txt[i], float(s)) for i,s in zip(indices, scores)],
+            "facts": [(meta_txt[i], float(s)) for i,s in zip(indices, scores)],
         }
         examples.append(example)
 
     with open(exp_file, "w") as file:
         json.dump(examples, file, indent=4)
 
-
-from typing import List, Optional
 
 def save_file_for_generations(fname, inputs:List, sep:Optional[str]="\t", encoding:Optional[str]='utf-8'):
     sizes = np.array([len(o) for o in inputs])
@@ -79,6 +79,7 @@ def save_file_for_generations(fname, inputs:List, sep:Optional[str]="\t", encodi
                 i = str(i).replace("\n", "").replace("\t", "").replace("->", "")
                 line = line + sep + i if len(line) else i
             file.write(f'{line}\n')
+
 
 def musique_metadata_filtering():
     data_file = "/data/datasets/multihop/musique/XC/raw_data/test.raw.csv"
@@ -97,16 +98,38 @@ def musique_metadata_filtering():
     save_file_for_generations(f"{save_dir}/test_facts_filtering.raw.txt", [data_ids, data_txt, data_meta_txt])
 
 
+DATASETS = [
+    "arguana",
+    "scidocs",
+    "scifact",
+    "webis-touche2020",
+    "trec-covid",
+    "fiqa",
+    "msmarco",
+    "nfcorpus",
+]
+
+
 if __name__ == "__main__":
     # data_dir = "/data/datasets/multihop/musique/XC/"
     # output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/predictions/multihop"
     # dset = "musique"
     # musique_metadata(data_dir, output_dir, dset)
 
-    data_dir = "/home/sasokan/suchith/HippoRAG/reproduce/dataset/musique"
-    output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
-    dset = "musique-hipporag"
-    musique_metadata(data_dir, output_dir, dset)
+
+    # data_dir = "/home/sasokan/suchith/HippoRAG/reproduce/dataset/musique"
+    # output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
+    # dset = "musique-hipporag"
+    # musique_metadata(data_dir, output_dir, dset)
+
 
     # musique_metadata_filtering()
+
+
+    data_dir, dset_type = "/data/datasets/", "beir"
+    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002/"
+
+    for dset_name in tqdm(DATASETS):
+        early_concate_metadata(data_dir, output_dir, dset_type, dset_name, meta_order="sorted")
+
 
