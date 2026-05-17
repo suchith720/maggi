@@ -29,6 +29,7 @@ if __name__ == "__main__":
     # output_dir = "/home/sasokan/b-sprabhu/outputs/mogicX/54_nvembed-for-msmarco-001/"
     output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002/"
     # output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
+    # output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002/"
 
     repr_dir = f"{output_dir}/representations/{input_args.dset_type}/{input_args.dataset}"
     metric_dir = f"{output_dir}/metrics/{input_args.dset_type}"
@@ -81,7 +82,7 @@ if __name__ == "__main__":
             tst_repr = F.normalize(tst_repr, dim=1) if input_args.normalize else tst_repr
 
             if input_args.fct_pred or input_args.ent_pred:
-                tst_lbl = tst_ids = lbl_ids = None
+               tst_lbl = tst_ids = lbl_ids = None
             else:
                 tst_lbl = sp.load_npz(f"{data_dir}/tst_X_Y.npz")
                 tst_ids, tst_txt = load_raw_file(f"{data_dir}/raw_data/test.raw.csv")

@@ -72,6 +72,7 @@ def compute_negatives(data_repr:sp.csr_matrix, data_mat:sp.csr_matrix, lbl_repr:
 def additional_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=str)
+    parser.add_argument('--dset_type', type=str)
     parser.add_argument('--normalize', action='store_true')
     return parser.parse_known_args()[0]
 
@@ -80,30 +81,35 @@ if __name__ == "__main__":
     extra_args = additional_args()
 
     extra_args.dataset = "msmarco"
+    extra_args.dset_type = "beir"
     extra_args.normalize = True
 
     # output_dir = "/home/sasokan/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
     # output_dir = "/home/sasokan/b-sprabhu/outputs/mogicX/54_nvembed-for-msmarco-001/"
     output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
 
-    repr_dir = f"{output_dir}/representations/{extra_args.dataset}"
+    repr_dir = f"{output_dir}/representations/{extra_args.dset_type}/{extra_args.dataset}"
+
     lbl_repr = combine_embeddings(f"{repr_dir}/lbl_repr.pth", "lbl")
-
-    trn_repr = combine_embeddings(f"{repr_dir}/trn_repr.pth", "trn")
-    trn_repr = F.normalize(trn_repr, dim=1) if extra_args.normalize else trn_repr
-    trn_lbl = sp.load_npz(f"/data/datasets/beir/{extra_args.dataset}/XC/trn_X_Y.npz")
-
-    trn_pos = sp.load_npz("/home/sasokan/b-sprabhu/outputs/mogicX/54_nvembed-for-msmarco-001/matrices/msmarco/trn_X_Y_normalize-exact.npz")
-
     lbl_repr = F.normalize(lbl_repr, dim=1) if extra_args.normalize else lbl_repr
     lbl_repr = lbl_repr.T
 
-    pred_dir = f"{output_dir}/predictions/{extra_args.dataset}"
+    trn_repr = combine_embeddings(f"{repr_dir}/trn_repr.pth", "trn")
+    trn_repr = F.normalize(trn_repr, dim=1) if extra_args.normalize else trn_repr
+
+    trn_lbl = sp.load_npz(f"/data/datasets/beir/{extra_args.dataset}/XC/trn_X_Y.npz")
+
+    trn_pos = sp.load_npz("/data/outputs/mogicX/54_nvembed-for-msmarco-001/matrices/msmarco/trn_X_Y_normalize-exact.npz")
+
+
+    pred_dir = f"{output_dir}/predictions/{extra_args.dset_type}/{extra_args.dataset}"
     os.makedirs(pred_dir, exist_ok=True)
 
     # Threshold values in descending order.
-    threshs = [0.95, 0.9, 0.7, 0.5]
-    trn_negs = compute_negatives(trn_repr, trn_lbl, lbl_repr, trn_pos, threshs)
+    # threshs = [0.95, 0.9, 0.7, 0.5]
+
+    threshs = [0.85, 0.8]
+    trn_negs = compute_negatives(trn_repr, trn_lbl, lbl_repr, trn_pos, threshs, data_batch_sz=10_000, lbl_batch_sz=10_000)
 
     for t, neg in tqdm(zip(threshs, trn_negs), total=len(threshs)):
         sp.save_npz(f"{pred_dir}/negatives_trn_X_Y_thresh-{int(t*100)}.npz", neg)
