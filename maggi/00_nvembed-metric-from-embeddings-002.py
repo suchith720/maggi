@@ -12,6 +12,8 @@ def parse_args():
 
     parser.add_argument('--fct_pred', action='store_true')
     parser.add_argument('--ent_pred', action='store_true')
+    parser.add_argument('--int_pred', action='store_true')
+
     parser.add_argument('--similarity', action='store_true')
     parser.add_argument('--related_query', action='store_true')
     parser.add_argument('--exact', action='store_true')
@@ -36,8 +38,10 @@ if __name__ == "__main__":
     data_dir = f"/data/datasets/{input_args.dset_type}/{input_args.dataset}/XC/"
 
     if input_args.fct_pred: input_args.repr_suffix = "fact-lbl"
+    if input_args.int_pred: input_args.repr_suffix = "intent-lbl"
+
     repr_suffix = "" if input_args.repr_suffix is None else f"_{input_args.repr_suffix}"
-    save_suffix = "" if input_args.save_suffix is None or input_args.fct_pred else f"-{input_args.save_suffix}"
+    save_suffix = "" if (input_args.save_suffix is None or input_args.fct_pred or input_args.int_pred) else f"-{input_args.save_suffix}"
 
     # Load embeddings
 
@@ -61,6 +65,8 @@ if __name__ == "__main__":
 
         if input_args.fct_pred:
             lbl_file, lbl_role, lbl_name = f"{repr_dir}/fct_repr.pth", "fct", "facts"
+        elif input_args.int_pred:
+            lbl_file, lbl_role, lbl_name = f"{repr_dir}/int_repr.pth", "int", "intents"
         elif input_args.ent_pred:
             lbl_file, lbl_role, lbl_name = f"{repr_dir}/ent_repr.pth", "ent", "entities"
         else:
@@ -81,8 +87,13 @@ if __name__ == "__main__":
             tst_repr = combine_embeddings(f"{repr_dir}/tst_repr{repr_suffix}.pth", "tst", repr_suffix)
             tst_repr = F.normalize(tst_repr, dim=1) if input_args.normalize else tst_repr
 
+<<<<<<< HEAD
             if input_args.fct_pred or input_args.ent_pred:
                tst_lbl = tst_ids = lbl_ids = None
+=======
+            if (input_args.fct_pred or input_args.ent_pred or input_args.int_pred):
+                tst_lbl = tst_ids = lbl_ids = None
+>>>>>>> d2fed93 (updated nvembed inference scripts)
             else:
                 tst_lbl = sp.load_npz(f"{data_dir}/tst_X_Y.npz")
                 tst_ids, tst_txt = load_raw_file(f"{data_dir}/raw_data/test.raw.csv")
@@ -92,7 +103,7 @@ if __name__ == "__main__":
                 trn_repr = combine_embeddings(f"{repr_dir}/trn_repr{repr_suffix}.pth", "trn", repr_suffix)
                 trn_repr = F.normalize(trn_repr, dim=1) if input_args.normalize else trn_repr
 
-                if input_args.fct_pred or input_args.ent_pred:
+                if (input_args.fct_pred or input_args.ent_pred or input_args.int_pred):
                     trn_lbl = trn_ids = None
                 else:
                     trn_lbl = sp.load_npz(f"{data_dir}/trn_X_Y.npz")
@@ -100,7 +111,7 @@ if __name__ == "__main__":
                     if lbl_ids is None: 
                         lbl_ids, lbl_txt = load_raw_file(f"{data_dir}/raw_data/label.raw.csv")
 
-            if input_args.exact and (not input_args.fct_pred) and (not input_args.ent_pred):
+            if input_args.exact and (not input_args.fct_pred) and (not input_args.ent_pred) and (not input_args.int_pred):
                 if trn_repr is None: trn_lbl = sp.load_npz(f"{data_dir}/trn_X_Y.npz")
                 nnz = trn_lbl.getnnz(axis=0) + tst_lbl.getnnz(axis=0)
                 valid_idxs = np.where(nnz > 0)[0]

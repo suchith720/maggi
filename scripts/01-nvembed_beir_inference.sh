@@ -1,10 +1,14 @@
-datasets="arguana fiqa msmarco nfcorpus scidocs scifact trec-covid webis-touche2020"
+# datasets="arguana fiqa msmarco nfcorpus scidocs scifact trec-covid webis-touche2020"
+
+datasets="fiqa msmarco nfcorpus scidocs scifact trec-covid webis-touche2020"
+
+datasets="msmarco"
 dset_type="beir"
 
 # datasets="musique"
 # dset_type="multihop"
 
-expt_no=2
+expt_no=3
 
 if [ $expt_no == 1 ]
 then
@@ -58,20 +62,18 @@ then
 	
 		instruction="/home/sasokan/suchith/maggi/instructions/01-beir_facts.json"
 
-		# bash scripts/00-nvembed_inference.sh $dataset trn $dset_type fact-lbl $instruction
-		python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --fct_pred --train
-
 		# bash scripts/00-nvembed_inference.sh $dataset fct $dset_type
 		# bash scripts/00-nvembed_inference.sh $dataset tst $dset_type  fact-lbl $instruction
 		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --fct_pred
-	done
 
-elif [ $expt_no == 4 ]
-then
-	for dataset in $datasets
-	do
-		echo $dataset
-		python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --fct_pred --similarity
+		# bash scripts/00-nvembed_inference.sh $dataset int $dset_type
+		# bash scripts/00-nvembed_inference.sh $dataset tst $dset_type  intent-lbl $instruction
+		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --int_pred
+
+		# bash scripts/00-nvembed_inference.sh $dataset int $dset_type
+		# bash scripts/00-nvembed_inference.sh $dataset tst $dset_type  intent-lbl $instruction
+		bash scripts/00-nvembed_inference.sh $dataset trn $dset_type  intent-lbl $instruction
+		python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --int_pred --train
 	done
 
 elif [ $expt_no == 4 ]
@@ -83,3 +85,4 @@ then
 		python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --fct_pred --similarity
 	done
 fi
+

@@ -31,9 +31,11 @@ def parse_args():
     parser.add_argument('--instruction', type=none_or_str, default=None)
     parser.add_argument('--qry_info_file', type=none_or_str, default=None)
 
-    parser.add_argument('--get_lbl_repr', action='store_true')
     parser.add_argument('--get_fct_repr', action='store_true')
     parser.add_argument('--get_ent_repr', action='store_true')
+    parser.add_argument('--get_int_repr', action='store_true')
+
+    parser.add_argument('--get_lbl_repr', action='store_true')
     parser.add_argument('--get_tst_repr', action='store_true')
     parser.add_argument('--get_trn_repr', action='store_true')
 
@@ -91,6 +93,15 @@ if __name__ == '__main__':
             dataset = joblib.load(fname)
         else:
             lbl_info_file = f"{data_dir}/raw_data/hipporag-fact.raw.csv"
+            dataset = tokenized_labels(lbl_info_file, input_args.idx, input_args.parts, model_name=mname, max_length=64)
+            joblib.dump(dataset, fname)
+
+    elif input_args.get_int_repr:
+        fname = f"{token_dir}/intent{lbl_suffix}.joblib"
+        if os.path.exists(fname):
+            dataset = joblib.load(fname)
+        else:
+            lbl_info_file = f"{data_dir}/document_intent_substring/simple/raw_data/label_intent.raw.csv"
             dataset = tokenized_labels(lbl_info_file, input_args.idx, input_args.parts, model_name=mname, max_length=64)
             joblib.dump(dataset, fname)
 
@@ -211,6 +222,9 @@ if __name__ == '__main__':
 
     elif input_args.get_ent_repr: 
         get_and_save_representation(learn, dataset, f'{save_dir}/ent_repr{lbl_suffix}.pth')
+
+    elif input_args.get_int_repr: 
+        get_and_save_representation(learn, dataset, f'{save_dir}/int_repr{lbl_suffix}.pth')
 
     elif input_args.get_tst_repr: 
         get_and_save_representation(learn, dataset, f'{save_dir}/tst_repr{qry_suffix}.pth')
