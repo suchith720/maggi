@@ -27,9 +27,9 @@ if __name__ == "__main__":
 
     # output_dir = "/home/sasokan/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
     # output_dir = "/home/sasokan/b-sprabhu/outputs/mogicX/54_nvembed-for-msmarco-001/"
-    output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002/"
+    # output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002/"
     # output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
-    # output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002/"
+    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002/"
 
     repr_dir = f"{output_dir}/representations/{input_args.dset_type}/{input_args.dataset}"
     metric_dir = f"{output_dir}/metrics/{input_args.dset_type}"

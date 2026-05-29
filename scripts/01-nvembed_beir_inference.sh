@@ -1,6 +1,4 @@
 datasets="arguana fiqa msmarco nfcorpus scidocs scifact trec-covid webis-touche2020"
-
-datasets="arguana"
 dset_type="beir"
 
 # datasets="musique"
@@ -42,11 +40,13 @@ then
 
 		## HippoRAG metadata
 		
-		instruction="instructions/02-hipporag-fact-nvembedv2.json"
-                qry_info_file="/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002/raw_data/$dset_type/$dataset/test_fact_topk-sorted.raw.txt"
+		# instruction="instructions/02-hipporag-fact-nvembedv2.json"
+                # qry_info_file="/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002/raw_data/$dset_type/$dataset/test_fact_topk-sorted.raw.txt"
+                # bash scripts/00-nvembed_inference.sh $dataset tst $dset_type hipporag-fact-nvembedv2 $instruction $qry_info_file
 
-                bash scripts/00-nvembed_inference.sh $dataset tst $dset_type hipporag-fact-nvembedv2 $instruction $qry_info_file
-                # python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --repr_suffix hipporag-fact-nvembedv2 --save_suffix hipporag-fact-nvembedv2
+		lbl_rep_file="/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/representations/$dset_type/$dataset/lbl_repr.pth"
+                python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --repr_suffix hipporag-fact-nvembedv2 \
+			--save_suffix hipporag-fact-nvembedv2 --lbl_rep_file $lbl_rep_file
 
 	done
 
