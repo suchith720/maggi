@@ -2,7 +2,8 @@
 
 if [ $# -lt 3 ]
 then
-	echo "scripts/00-nvembed_inference.sh <dataset> <role> <dset_type> <optional:save_suffix> <optional:instruction> <optional:qry_info_file> <optional:meta_name> <optional:meta_info_file>"
+	echo "scripts/00-nvembed_inference.sh <dataset> <role> <dset_type> <optional:save_suffix> <optional:instruction> \
+		<optional:qry_info_file> <optional:meta_name> <optional:meta_info_file>"
 	exit 1
 fi
 
@@ -52,7 +53,8 @@ for i in $(seq 0 $((n_gpu -1)))
 do
 	if [ $role == "lbl" ]
 	then
-		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_lbl_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type &
+		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_lbl_repr \
+			--dataset $dataset --batch_size $batch_size --dset_type $dset_type &
 
 	elif [ $role == "meta" ]
 	then
@@ -61,13 +63,15 @@ do
 
 	elif [ $role == "tst" ]
 	then
-		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_tst_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type \
-			--save_suffix $save_suffix --instruction $instruction --qry_info_file $qry_info_file &
+		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_tst_repr \
+			--dataset $dataset --batch_size $batch_size --dset_type $dset_type --save_suffix $save_suffix --instruction $instruction \
+			--qry_info_file $qry_info_file &
 
 	elif [ $role == "trn" ]
 	then
-		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_trn_repr --dataset $dataset --batch_size $batch_size --dset_type $dset_type \
-			--save_suffix $save_suffix --instruction $instruction --qry_info_file $qry_info_file &
+		CUDA_VISIBLE_DEVICES=$i python maggi/00_nvembed-compute-msmarco-embeddings-001.py --idx $i --parts $n_gpu --get_trn_repr \
+			--dataset $dataset --batch_size $batch_size --dset_type $dset_type --save_suffix $save_suffix --instruction $instruction \
+			--qry_info_file $qry_info_file &
 	else
 		echo "Invalid role: $role"
 	fi

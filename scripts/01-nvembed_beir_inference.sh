@@ -1,7 +1,13 @@
-datasets="fiqa msmarco nfcorpus scidocs scifact trec-covid webis-touche2020"
+datasets="arguana climate-fever dbpedia-entity fever fiqa hotpotqa nfcorpus nq quora scidocs scifact webis-touche2020 trec-covid \
+	cqadupstack/android cqadupstack/english cqadupstack/gaming cqadupstack/gis cqadupstack/mathematica cqadupstack/physics cqadupstack/programmers \
+	cqadupstack/stats cqadupstack/tex cqadupstack/unix cqadupstack/webmasters cqadupstack/wordpress"
+
+# datasets="fiqa msmarco nfcorpus scidocs scifact trec-covid webis-touche2020"
 
 datasets="msmarco"
+
 dset_type="beir"
+
 expt_no=3
 
 if [ $expt_no == 1 ]
@@ -66,9 +72,15 @@ then
 		# bash scripts/00-nvembed_inference.sh $dataset tst $dset_type  intent-lbl $instruction
 		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --int_pred
 
+		# meta_info_file=/data/datasets/beir/$dataset/XC/raw_data/hipporag-fact_exact.raw.csv
+		# bash scripts/00-nvembed_inference.sh $dataset meta $dset_type None None None hipporag-fact-exact $meta_info_file
+
 		# bash scripts/00-nvembed_inference.sh $dataset tst $dset_type  fact-lbl $instruction
 		# bash scripts/00-nvembed_inference.sh $dataset trn $dset_type  fact-lbl $instruction
 		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --int_pred --train
+
+		# meta_info_file=/data/datasets/beir/$dataset/XC/intent_substring/raw_data/intent.raw.csv
+		# bash scripts/00-nvembed_inference.sh $dataset meta $dset_type None None None intent-substring $meta_info_file
 
 		# meta_info_file=/data/datasets/beir/$dataset/XC/raw_data/hipporag-fact_exact.raw.csv
 		# bash scripts/00-nvembed_inference.sh $dataset meta $dset_type None None None hipporag-fact-exact $meta_info_file
@@ -81,7 +93,6 @@ then
 	for dataset in $datasets
 	do
 		echo $dataset
-	
 		python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --fct_pred --similarity
 	done
 fi
