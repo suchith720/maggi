@@ -38,7 +38,6 @@ if __name__ == "__main__":
     repr_dir = f"{output_dir}/representations/{input_args.dset_type}/{input_args.dataset}"
     metric_dir = f"{output_dir}/metrics/{input_args.dset_type}"
 
-    if input_args.meta_pred: input_args.repr_suffix = f"{input_args.meta_name}-lbl"
     if input_args.meta_role is None: input_args.meta_role = input_args.meta_name
 
     repr_suffix = "" if input_args.repr_suffix is None else f"_{input_args.repr_suffix}"

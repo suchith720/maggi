@@ -66,13 +66,14 @@ then
 		# bash scripts/00-nvembed_inference.sh $dataset tst $dset_type  intent-lbl $instruction
 		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --int_pred
 
-		meta_info_file=/data/datasets/beir/$dataset/XC/raw_data/hipporag-fact_exact.raw.csv
-		bash scripts/00-nvembed_inference.sh $dataset meta $dset_type None None None hipporag-fact-exact $meta_info_file
-
 		# bash scripts/00-nvembed_inference.sh $dataset tst $dset_type  fact-lbl $instruction
 		# bash scripts/00-nvembed_inference.sh $dataset trn $dset_type  fact-lbl $instruction
-
 		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --int_pred --train
+
+		# meta_info_file=/data/datasets/beir/$dataset/XC/raw_data/hipporag-fact_exact.raw.csv
+		# bash scripts/00-nvembed_inference.sh $dataset meta $dset_type None None None hipporag-fact-exact $meta_info_file
+		python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --train --repr_suffix fact-lbl \
+			--meta_pred --meta_name hipporag-fact-exact
 	done
 
 elif [ $expt_no == 4 ]
