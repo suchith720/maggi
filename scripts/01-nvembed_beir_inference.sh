@@ -3,8 +3,7 @@ datasets="arguana climate-fever dbpedia-entity fever fiqa hotpotqa nfcorpus nq q
 	cqadupstack/stats cqadupstack/tex cqadupstack/unix cqadupstack/webmasters cqadupstack/wordpress"
 
 # datasets="fiqa msmarco nfcorpus scidocs scifact trec-covid webis-touche2020"
-
-datasets="msmarco"
+# datasets="msmarco"
 
 dset_type="beir"
 
@@ -84,8 +83,11 @@ then
 
 		# meta_info_file=/data/datasets/beir/$dataset/XC/raw_data/hipporag-fact_exact.raw.csv
 		# bash scripts/00-nvembed_inference.sh $dataset meta $dset_type None None None hipporag-fact-exact $meta_info_file
-		python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --train --repr_suffix fact-lbl \
-			--meta_pred --meta_name hipporag-fact-exact
+		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --train --repr_suffix fact-lbl \
+		# 	--meta_pred --meta_name hipporag-fact-exact
+
+		meta_info_file=/data/datasets/beir/$dataset/XC/raw_data/hipporag-fact.raw.csv
+		bash scripts/00-nvembed_inference.sh $dataset meta $dset_type None None None hipporag-fact-exact $meta_info_file
 	done
 
 elif [ $expt_no == 4 ]
