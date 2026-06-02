@@ -8,7 +8,9 @@ then
 fi
 
 dataset=$1
+
 role=$2
+
 dset_type=$3
 
 if [ $# -gt 3 ]
@@ -47,6 +49,7 @@ else
 fi
 
 n_gpu=4
+
 batch_size=16
 
 for i in $(seq 0 $((n_gpu -1)))

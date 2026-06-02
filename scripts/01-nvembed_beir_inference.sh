@@ -1,6 +1,9 @@
-datasets="arguana climate-fever dbpedia-entity fever fiqa hotpotqa nfcorpus nq quora scidocs scifact webis-touche2020 trec-covid \
-	cqadupstack/android cqadupstack/english cqadupstack/gaming cqadupstack/gis cqadupstack/mathematica cqadupstack/physics cqadupstack/programmers \
-	cqadupstack/stats cqadupstack/tex cqadupstack/unix cqadupstack/webmasters cqadupstack/wordpress"
+# datasets="arguana climate-fever dbpedia-entity fever fiqa hotpotqa nfcorpus nq quora scidocs scifact webis-touche2020 trec-covid \
+# 	cqadupstack/android cqadupstack/english cqadupstack/gaming cqadupstack/gis cqadupstack/mathematica cqadupstack/physics cqadupstack/programmers \
+# 	cqadupstack/stats cqadupstack/tex cqadupstack/unix cqadupstack/webmasters cqadupstack/wordpress"
+
+datasets="quora cqadupstack/android cqadupstack/english cqadupstack/gaming cqadupstack/gis cqadupstack/mathematica cqadupstack/physics \
+	cqadupstack/programmers cqadupstack/stats cqadupstack/tex cqadupstack/unix cqadupstack/webmasters cqadupstack/wordpress"
 
 # datasets="msmarco"
 
@@ -87,6 +90,7 @@ then
 		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --train --repr_suffix fact-lbl
 
 		# meta_info_file=/data/datasets/beir/$dataset/XC/raw_data/hipporag-fact.raw.csv
+		# meta_info_file=/data/datasets/beir/$dataset/XC/raw_data/hipporag-fact_label_cluster_samples.raw.csv
 		# bash scripts/00-nvembed_inference.sh $dataset meta $dset_type None None None hipporag-fact-exact $meta_info_file
 		python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --repr_suffix fact-lbl \
 			--meta_pred --meta_name hipporag-fact-exact

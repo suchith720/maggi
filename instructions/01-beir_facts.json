@@ -29,6 +29,11 @@
             "query": "Given a question, retrieve facts that answer the question",
             "corpus": ""
         },
+    "QuoraRetrieval":
+        {
+            "query": "Given a question, retrieve facts that help identify semantically equivalent questions",
+            "corpus": ""
+        },
     "SCIDOCS":
         {
             "query": "Given a scientific paper title, retrieve paper facts that helps retrieve abstracts that are cited by the given paper",
@@ -64,6 +69,67 @@
             "query": "Given a financial question, retrieve relevant facts that answer the query",
             "corpus": ""
         },
+    "CQADupStackAndroid":
+	{
+	    "query": "Given a question about Android, retrieve facts that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackEnglish":
+	{
+	    "query": "Given a question about English language usage, retrieve facts that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackGaming":
+	{
+	    "query": "Given a question about video games, retrieve facts that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackGis":
+	{
+	    "query": "Given a question about geographic information systems, retrieve facts that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackMathematica":
+	{
+	    "query": "Given a question about Mathematica, retrieve facts that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackPhysics":
+	{
+	    "query": "Given a question about physics, retrieve facts that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackProgrammers":
+	{
+	    "query": "Given a software engineering question, retrieve facts that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackStats":
+	{
+	    "query": "Given a question about statistics or machine learning, retrieve facts that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackTex":
+	{
+	    "query": "Given a question about TeX or LaTeX, retrieve facts that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackUnix":
+	{
+	    "query": "Given a question about Unix or Linux systems, retrieve facts that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackWebmasters":
+	{
+	    "query": "Given a question about website administration or web development, retrieve facts that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+	
+    "CQADupStackWordpress":
+	{
+	    "query": "Given a question about WordPress, retrieve facts that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
     "MuSiQue":
         {
             "query": "Given a multi-hop question, retrieve facts that can help answer the question",
