@@ -89,7 +89,8 @@ if __name__ == '__main__':
             dataset = joblib.load(fname)
         else:
             lbl_info_file = f"{data_dir}/raw_data/label.raw.csv"
-            dataset = tokenized_labels(lbl_info_file, input_args.idx, input_args.parts, model_name=mname, instruction=instruction)
+            dataset = tokenized_labels(lbl_info_file, input_args.idx, input_args.parts, model_name=mname, instruction=instruction, 
+                                       dset_name=input_args.dataset)
             joblib.dump(dataset, fname)
 
     elif input_args.get_meta_repr:
@@ -97,8 +98,8 @@ if __name__ == '__main__':
         if os.path.exists(fname):
             dataset = joblib.load(fname)
         else:
-            dataset = tokenized_labels(input_args.meta_info_file, input_args.idx, input_args.parts, model_name=mname, 
-                                       instruction=instruction, max_length=64)
+            dataset = tokenized_labels(input_args.meta_info_file, input_args.idx, input_args.parts, model_name=mname, instruction=instruction, 
+                                       dset_name=input_args.dataset, max_length=64)
             joblib.dump(dataset, fname)
 
     elif input_args.get_tst_repr:
