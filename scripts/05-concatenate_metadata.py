@@ -7,16 +7,20 @@ from xclib.utils.sparse import retain_topk
 from typing import List, Optional
 
 
-def early_concate_metadata(data_dir:str, output_dir:str, dset_type:str, dset_name:str, meta_order:Optional[str]="sorted"):
-    meta_name = "hipporag-fact"
+def early_concate_metadata(data_dir:str, output_dir:str, dset_type:str, dset_name:str, meta_order:Optional[str]="sorted", 
+                           meta_name:Optional[str]="fact", data_type:Optional[str]="test"):
 
-    data_file = f"{data_dir}/{dset_type}/{dset_name}/XC/raw_data/test.raw.csv"
+    data_file = f"{data_dir}/{dset_type}/{dset_name}/XC/raw_data/{data_type}.raw.csv"
     data_ids, data_txt = load_raw_file(data_file)
 
-    meta_file = f"{data_dir}/{dset_type}/{dset_name}/XC/raw_data/{meta_name}.raw.csv"
+    # meta_file = f"{data_dir}/{dset_type}/{dset_name}/XC/raw_data/{meta_name.replace('-exact', '_exact')}.raw.csv"
+    # meta_file = f"{data_dir}/{dset_type}/{dset_name}/XC/intent_substring/raw_data/intent.raw.csv"
+    # meta_file = f"{data_dir}/{dset_type}/{dset_name}/XC/raw_data/{meta_name}.raw.csv"
+
+    meta_file = f"{data_dir}/{dset_type}/{dset_name}/XC/raw_data/{meta_name.replace('-label-cluster-samples', '_label_cluster_samples')}.raw.csv"
     meta_ids, meta_txt = load_raw_file(meta_file)
 
-    dm_file = f"{output_dir}/predictions/{dset_type}/{dset_name}/test_facts.npz"
+    dm_file = f"{output_dir}/predictions/{dset_type}/{dset_name}/{data_type}_{meta_name}.npz"
     data_meta = retain_topk(sp.load_npz(dm_file), k=5)
 
     assert len(data_ids) == data_meta.shape[0]
@@ -42,11 +46,11 @@ def early_concate_metadata(data_dir:str, output_dir:str, dset_type:str, dset_nam
     os.makedirs(save_dir, exist_ok=True)
 
     if meta_order == "sorted":
-        raw_file = f"{save_dir}/test_fact_topk-sorted.raw.txt"
-        exp_file = f"{save_dir}/examples_fact_topk-sorted.json"
+        raw_file = f"{save_dir}/{data_type}_{meta_name}_topk-sorted.raw.txt"
+        exp_file = f"{save_dir}/examples_{meta_name}_topk-sorted.json"
     elif meta_order == "random":
-        raw_file = f"{save_dir}/test_fact_topk-random.raw.txt"
-        exp_file = f"{save_dir}/examples_fact_topk-random.json"
+        raw_file = f"{save_dir}/{data_type}_{meta_name}_topk-random.raw.txt"
+        exp_file = f"{save_dir}/examples_{meta_name}_topk-random.json"
 
     save_raw_file(raw_file, data_ids, aug_txt)
 
@@ -61,7 +65,7 @@ def early_concate_metadata(data_dir:str, output_dir:str, dset_type:str, dset_nam
         indices, scores = data_meta[idx].indices[sort_idx], data_meta[idx].data[sort_idx]
         example = {
             "query": data_txt[idx], 
-            "facts": [(meta_txt[i], float(s)) for i,s in zip(indices, scores)],
+            meta_name: [(meta_txt[i], float(s)) for i,s in zip(indices, scores)],
         }
         examples.append(example)
 
@@ -104,10 +108,28 @@ DATASETS = [
     "scifact",
     "webis-touche2020",
     "trec-covid",
+    "cqadupstack/android",
+    "cqadupstack/english",
+    "cqadupstack/gaming",
+    "cqadupstack/gis",
+    "cqadupstack/mathematica",
+    "cqadupstack/physics",
+    "cqadupstack/programmers",
+    "cqadupstack/stats",
+    "cqadupstack/tex",
+    "cqadupstack/unix",
+    "cqadupstack/webmasters",
+    "cqadupstack/wordpress",
     "fiqa",
-    "msmarco",
+    "climate-fever",
+    "dbpedia-entity",
+    "fever",
     "nfcorpus",
+    "nq",
+    # "hotpotqa",
 ]
+
+DATASETS = ["hotpotqa"]
 
 
 if __name__ == "__main__":
@@ -116,20 +138,29 @@ if __name__ == "__main__":
     # dset = "musique"
     # musique_metadata(data_dir, output_dir, dset)
 
-
     # data_dir = "/home/sasokan/suchith/HippoRAG/reproduce/dataset/musique"
     # output_dir = "/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/"
     # dset = "musique-hipporag"
     # musique_metadata(data_dir, output_dir, dset)
 
-
     # musique_metadata_filtering()
 
+    # data_dir, dset_type = "/data/datasets/", "beir"
+    # output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002/"
+    # for dset_name in tqdm(DATASETS):
+    #     early_concate_metadata(data_dir, output_dir, dset_type, dset_name, meta_order="sorted")
 
     data_dir, dset_type = "/data/datasets/", "beir"
-    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002/"
-
+    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-003/"
     for dset_name in tqdm(DATASETS):
-        early_concate_metadata(data_dir, output_dir, dset_type, dset_name, meta_order="sorted")
+        early_concate_metadata(data_dir, output_dir, dset_type, dset_name, meta_order="sorted", 
+                               meta_name="hipporag-fact-label-cluster-samples", data_type="test")
+
+    # early_concate_metadata(data_dir, output_dir, dset_type, "msmarco", meta_order="sorted", meta_name="hipporag-fact-exact", data_type="train")
+
+    # data_dir, dset_type = "/data/datasets/", "beir"
+    # output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-003/"
+    # early_concate_metadata(data_dir, output_dir, dset_type, "msmarco", meta_order="sorted", meta_name="intent-substring", data_type="train")
+    # early_concate_metadata(data_dir, output_dir, dset_type, "msmarco", meta_order="sorted", meta_name="intent-substring", data_type="test")
 
 

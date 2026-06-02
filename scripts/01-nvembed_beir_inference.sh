@@ -1,12 +1,7 @@
-# datasets="arguana climate-fever dbpedia-entity fever fiqa hotpotqa nfcorpus nq quora scidocs scifact webis-touche2020 trec-covid \
-# 	cqadupstack/android cqadupstack/english cqadupstack/gaming cqadupstack/gis cqadupstack/mathematica cqadupstack/physics cqadupstack/programmers \
-# 	cqadupstack/stats cqadupstack/tex cqadupstack/unix cqadupstack/webmasters cqadupstack/wordpress"
-
-datasets="nfcorpus nq quora scidocs scifact webis-touche2020 trec-covid \
+datasets="arguana climate-fever dbpedia-entity fever fiqa hotpotqa nfcorpus nq quora scidocs scifact webis-touche2020 trec-covid \
 	cqadupstack/android cqadupstack/english cqadupstack/gaming cqadupstack/gis cqadupstack/mathematica cqadupstack/physics cqadupstack/programmers \
 	cqadupstack/stats cqadupstack/tex cqadupstack/unix cqadupstack/webmasters cqadupstack/wordpress"
 
-# datasets="fiqa msmarco nfcorpus scidocs scifact trec-covid webis-touche2020"
 # datasets="msmarco"
 
 dset_type="beir"
@@ -84,14 +79,17 @@ then
 
 		# meta_info_file=/data/datasets/beir/$dataset/XC/intent_substring/raw_data/intent.raw.csv
 		# bash scripts/00-nvembed_inference.sh $dataset meta $dset_type None None None intent-substring $meta_info_file
+		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --train --repr_suffix fact-lbl \
+		# 	--meta_pred --meta_name intent-substring
 
 		# meta_info_file=/data/datasets/beir/$dataset/XC/raw_data/hipporag-fact_exact.raw.csv
 		# bash scripts/00-nvembed_inference.sh $dataset meta $dset_type None None None hipporag-fact-exact $meta_info_file
-		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --train --repr_suffix fact-lbl \
-		# 	--meta_pred --meta_name hipporag-fact-exact
+		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --train --repr_suffix fact-lbl
 
-		meta_info_file=/data/datasets/beir/$dataset/XC/raw_data/hipporag-fact.raw.csv
-		bash scripts/00-nvembed_inference.sh $dataset meta $dset_type None None None hipporag-fact-exact $meta_info_file
+		# meta_info_file=/data/datasets/beir/$dataset/XC/raw_data/hipporag-fact.raw.csv
+		# bash scripts/00-nvembed_inference.sh $dataset meta $dset_type None None None hipporag-fact-exact $meta_info_file
+		python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --repr_suffix fact-lbl \
+			--meta_pred --meta_name hipporag-fact-exact
 	done
 
 elif [ $expt_no == 4 ]
