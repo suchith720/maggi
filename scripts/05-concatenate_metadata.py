@@ -150,6 +150,11 @@ if __name__ == "__main__":
     # for dset_name in tqdm(DATASETS):
     #     early_concate_metadata(data_dir, output_dir, dset_type, dset_name, meta_order="sorted")
 
+    # data_dir, dset_type = "/data/datasets/", "beir"
+    # output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002/"
+    # for dset_name in tqdm(DATASETS):
+    #     early_concate_metadata(data_dir, output_dir, dset_type, dset_name, meta_order="sorted")
+
     data_dir, dset_type = "/data/datasets/", "beir"
     output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-003/"
     for dset_name in tqdm(DATASETS):
@@ -162,5 +167,3 @@ if __name__ == "__main__":
     # output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-003/"
     # early_concate_metadata(data_dir, output_dir, dset_type, "msmarco", meta_order="sorted", meta_name="intent-substring", data_type="train")
     # early_concate_metadata(data_dir, output_dir, dset_type, "msmarco", meta_order="sorted", meta_name="intent-substring", data_type="test")
-
-
