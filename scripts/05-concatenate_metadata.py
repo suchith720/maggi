@@ -6,6 +6,7 @@ from sugar.core import load_raw_file, save_raw_file
 from xclib.utils.sparse import retain_topk
 from typing import List, Optional
 
+from xcai.misc import BEIR_DATASETS
 
 def early_concate_metadata(data_dir:str, output_dir:str, dset_type:str, dset_name:str, meta_order:Optional[str]="sorted", 
                            meta_name:Optional[str]="fact", data_type:Optional[str]="test"):
@@ -16,8 +17,9 @@ def early_concate_metadata(data_dir:str, output_dir:str, dset_type:str, dset_nam
     # meta_file = f"{data_dir}/{dset_type}/{dset_name}/XC/raw_data/{meta_name.replace('-exact', '_exact')}.raw.csv"
     # meta_file = f"{data_dir}/{dset_type}/{dset_name}/XC/intent_substring/raw_data/intent.raw.csv"
     # meta_file = f"{data_dir}/{dset_type}/{dset_name}/XC/raw_data/{meta_name}.raw.csv"
+    # meta_file = f"{data_dir}/{dset_type}/{dset_name}/XC/raw_data/{meta_name.replace('-label-cluster-samples', '_label_cluster_samples')}.raw.csv"
 
-    meta_file = f"{data_dir}/{dset_type}/{dset_name}/XC/raw_data/{meta_name.replace('-label-cluster-samples', '_label_cluster_samples')}.raw.csv"
+    meta_file = "/data/datasets/benchmarks/G_Datasets/G-LF-WikiTitles-1M/raw_data/label.raw.txt"
     meta_ids, meta_txt = load_raw_file(meta_file)
 
     dm_file = f"{output_dir}/predictions/{dset_type}/{dset_name}/{data_type}_{meta_name}.npz"
@@ -39,7 +41,7 @@ def early_concate_metadata(data_dir:str, output_dir:str, dset_type:str, dset_nam
             raise ValueError(f"Invalid order type: {meta_order}.")
 
         indices = r.indices[idx]
-        txt = q + " [SEP] " + " [SEP] ".join([meta_txt[i] for i in indices])
+        txt = q + " <CATEGORIES> " + " || ".join([meta_txt[i] for i in indices])
         aug_txt.append(txt)
 
     save_dir = f"{output_dir}/raw_data/{dset_type}/{dset_name}/"
@@ -155,11 +157,10 @@ if __name__ == "__main__":
     # for dset_name in tqdm(DATASETS):
     #     early_concate_metadata(data_dir, output_dir, dset_type, dset_name, meta_order="sorted")
 
-    data_dir, dset_type = "/data/datasets/", "beir"
-    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-003/"
-    for dset_name in tqdm(DATASETS):
-        early_concate_metadata(data_dir, output_dir, dset_type, dset_name, meta_order="sorted", 
-                               meta_name="hipporag-fact-label-cluster-samples", data_type="test")
+    # output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-003/"
+    # for dset_name in tqdm(DATASETS):
+    #     early_concate_metadata(data_dir, output_dir, dset_type, dset_name, meta_order="sorted", 
+    #                            meta_name="hipporag-fact-label-cluster-samples", data_type="test")
 
     # early_concate_metadata(data_dir, output_dir, dset_type, "msmarco", meta_order="sorted", meta_name="hipporag-fact-exact", data_type="train")
 
@@ -167,3 +168,9 @@ if __name__ == "__main__":
     # output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-003/"
     # early_concate_metadata(data_dir, output_dir, dset_type, "msmarco", meta_order="sorted", meta_name="intent-substring", data_type="train")
     # early_concate_metadata(data_dir, output_dir, dset_type, "msmarco", meta_order="sorted", meta_name="intent-substring", data_type="test")
+
+    data_dir, dset_type = "/data/datasets/", "beir"
+    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-004/"
+    for dset_name in tqdm(BEIR_DATASETS):
+        early_concate_metadata(data_dir, output_dir, dset_type, dset_name, meta_order="sorted", 
+                               meta_name="wikipedia-category", data_type="test")

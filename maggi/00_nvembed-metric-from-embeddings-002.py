@@ -19,6 +19,7 @@ def parse_args():
     parser.add_argument('--exact', action='store_true')
 
     parser.add_argument('--lbl_rep_file', type=str, default=None)
+    parser.add_argument('--meta_rep_file', type=str, default=None)
 
     parser.add_argument('--repr_suffix', type=str, default=None)
     parser.add_argument('--save_suffix', type=str, default=None)
@@ -32,7 +33,7 @@ if __name__ == "__main__":
 
     """
 
-    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-003/"
+    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-004/"
     data_dir = f"/data/datasets/{input_args.dset_type}/{input_args.dataset}/XC/"
 
     repr_dir = f"{output_dir}/representations/{input_args.dset_type}/{input_args.dataset}"
@@ -70,6 +71,7 @@ if __name__ == "__main__":
 
         if input_args.meta_pred:
             lbl_file, lbl_role, lbl_name = f"{repr_dir}/{input_args.meta_name}_repr.pth", input_args.meta_role, input_args.meta_name
+            if input_args.meta_rep_file is not None: lbl_file = input_args.meta_rep_file
         else:
             lbl_file, lbl_role, lbl_name = f"{repr_dir}/lbl_repr.pth", "lbl", "labels"
             if input_args.lbl_rep_file is not None: lbl_file = input_args.lbl_rep_file

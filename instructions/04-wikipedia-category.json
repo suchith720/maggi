@@ -1,0 +1,138 @@
+{
+    "ClimateFEVER":
+            {
+                "query": "Given a claim about climate change, retrieve categories that support or refute the claim",
+                "corpus": ""
+            },
+    "HotpotQA":
+        {
+            "query": "Given a multi-hop question, retrieve categories that can help answer the question",
+            "corpus": ""
+        },
+    "FEVER":
+        {
+            "query": "Given a claim, retrieve categories that support or refute the claim",
+            "corpus": ""
+        },
+    "MSMARCO":
+        {
+            "query": "Given a web search query, retrieve relevant categories that answer the query",
+            "corpus": ""
+        },
+    "DBPedia":
+        {
+            "query": "Given a query, retrieve relevant categories",
+            "corpus": ""
+        },
+    "NQ":
+        {
+            "query": "Given a question, retrieve categories that answer the question",
+            "corpus": ""
+        },
+    "QuoraRetrieval":
+        {
+            "query": "Given a question, retrieve categories that help identify semantically equivalent questions",
+            "corpus": ""
+        },
+    "SCIDOCS":
+        {
+            "query": "Given a scientific paper title, retrieve paper categories that helps retrieve abstracts that are cited by the given paper",
+            "corpus": ""
+        },
+    "TRECCOVID":
+        {
+            "query": "Given a query on COVID-19, retrieve categories that answer the query",
+            "corpus": ""
+        },
+    "Touche2020":
+        {
+            "query": "Given a question, retrieve categories that answer the question",
+            "corpus": ""
+        },
+    "SciFact":
+        {
+            "query": "Given a scientific claim, retrieve categories that support or refute the claim",
+            "corpus": ""
+        },
+    "NFCorpus":
+        {
+            "query": "Given a question, retrieve relevant categories that answer the question",
+            "corpus": ""
+        },
+    "ArguAna":
+        {
+            "query": "Given a claim, retrieve categories that support or refute the claim",
+            "corpus": ""
+        },
+    "FiQA2018":
+        {
+            "query": "Given a financial question, retrieve relevant categories that answer the query",
+            "corpus": ""
+        },
+    "CQADupStackAndroid":
+	{
+	    "query": "Given a question about Android, retrieve categories that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackEnglish":
+	{
+	    "query": "Given a question about English language usage, retrieve categories that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackGaming":
+	{
+	    "query": "Given a question about video games, retrieve categories that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackGis":
+	{
+	    "query": "Given a question about geographic information systems, retrieve categories that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackMathematica":
+	{
+	    "query": "Given a question about Mathematica, retrieve categories that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackPhysics":
+	{
+	    "query": "Given a question about physics, retrieve categories that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackProgrammers":
+	{
+	    "query": "Given a software engineering question, retrieve categories that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackStats":
+	{
+	    "query": "Given a question about statistics or machine learning, retrieve categories that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackTex":
+	{
+	    "query": "Given a question about TeX or LaTeX, retrieve categories that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackUnix":
+	{
+	    "query": "Given a question about Unix or Linux systems, retrieve categories that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "CQADupStackWebmasters":
+	{
+	    "query": "Given a question about website administration or web development, retrieve categories that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+	
+    "CQADupStackWordpress":
+	{
+	    "query": "Given a question about WordPress, retrieve categories that help identify semantically equivalent or duplicate questions",
+	    "corpus": ""
+	},
+    "MuSiQue":
+        {
+            "query": "Given a multi-hop question, retrieve categories that can help answer the question",
+            "corpus": ""
+        }
+}

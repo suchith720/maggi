@@ -53,14 +53,15 @@ if __name__ == '__main__':
 
     """
 
-    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-003"
+    output_dir = "/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-004"
     data_dir = f"/data/datasets/{input_args.dset_type}/{input_args.dataset}/XC/"
 
     save_dir = f"{output_dir}/representations/{input_args.dset_type}/{input_args.dataset}/"
     token_dir = f"{output_dir}/tokenized_inputs/{input_args.dset_type}/{input_args.dataset.replace('/', '-')}"
     os.makedirs(token_dir, exist_ok=True)
 
-    instruction = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json" if input_args.instruction is None else input_args.instruction
+    # instruction = "/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions.json" if input_args.instruction is None else input_args.instruction
+    instruction = input_args.instruction
 
     if input_args.get_meta_repr: 
         input_args.save_suffix = f"{input_args.meta_name}-lbl"

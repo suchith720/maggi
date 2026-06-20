@@ -7,15 +7,13 @@
 
 # datasets="msmarco"
 
-# datasets="arguana fiqa nfcorpus scidocs scifact trec-covid webis-touche2020 msmarco"
-
-datasets="climate-fever dbpedia-entity fever hotpotqa nq quora cqadupstack/android cqadupstack/english cqadupstack/gaming cqadupstack/gis \
-	cqadupstack/mathematica cqadupstack/physics cqadupstack/programmers cqadupstack/stats cqadupstack/tex cqadupstack/unix \
-	cqadupstack/webmasters cqadupstack/wordpress"
+datasets="msmarco arguana climate-fever dbpedia-entity fever fiqa hotpotqa nfcorpus nq quora scidocs scifact webis-touche2020 trec-covid msmarco \
+	cqadupstack/android cqadupstack/english cqadupstack/gaming cqadupstack/gis cqadupstack/mathematica cqadupstack/physics cqadupstack/programmers \
+	cqadupstack/stats cqadupstack/tex cqadupstack/unix cqadupstack/webmasters cqadupstack/wordpress"
 
 dset_type="beir"
 
-expt_no=1
+expt_no=3
 
 if [ $expt_no == 1 ]
 then
@@ -34,14 +32,15 @@ then
 	do
 		echo $dataset
 	
-		## gpt-category-linker
+		# # gpt-category-linker
 
             	# qry_info_file=/data/datasets/$dset_type/metadata/$dataset/raw_data/test_gpt-category-linker.raw.csv
 		# bash scripts/00-nvembed_inference.sh $dataset tst $dset_type category-gpt-linker None $qry_info_file 
 		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type \
 		# --repr_suffix category-gpt-linker --save_suffix category-gpt-linker
 
-		## category-gpt5-linker
+
+		# # category-gpt5-linker
 
 		# instruction="/home/sasokan/suchith/xcai/xcai/models/nvembed/instructions_category-gpt5-linker.json"
             	# qry_info_file="/data/datasets/$dset_type/metadata/$dataset/raw_data/test_category-gpt5-linker.csv"
@@ -50,25 +49,34 @@ then
 		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type \
 		# --repr_suffix category-gpt5-linker --save_suffix category-gpt5-linker
 
-		## HippoRAG metadata
+
+		# # HippoRAG metadata
 		
 		# instruction="instructions/02-hipporag-fact-nvembedv2.json"
                 # qry_info_file="/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-002/raw_data/$dset_type/$dataset/test_fact_topk-sorted.raw.txt"
                 # bash scripts/00-nvembed_inference.sh $dataset tst $dset_type hipporag-fact-nvembedv2 $instruction $qry_info_file
 
-		lbl_rep_file="/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/representations/$dset_type/$dataset/lbl_repr.pth"
-                python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type \
-			--repr_suffix hipporag-fact-nvembedv2 --save_suffix hipporag-fact-nvembedv2 --lbl_rep_file $lbl_rep_file
+		# lbl_rep_file="/data/suchith/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-001/representations/$dset_type/$dataset/lbl_repr.pth"
+                # python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type \
+		# 	--repr_suffix hipporag-fact-nvembedv2 --save_suffix hipporag-fact-nvembedv2 --lbl_rep_file $lbl_rep_file
 
 	done
 
 elif [ $expt_no == 3 ]
 then
+	# # Wikipedia category metadata
+	# instruction="/home/sasokan/suchith/maggi/instructions/04-wikipedia-category.json"
+	# meta_info_file=/data/datasets/benchmarks/G_Datasets/G-LF-WikiTitles-1M/raw_data/label.raw.txt
+	# bash scripts/00-nvembed_inference.sh metadata meta $dset_type None None None wikipedia-category $meta_info_file
+	# exit 1
+
 	for dataset in $datasets
 	do
 		echo $dataset
 	
-		instruction="/home/sasokan/suchith/maggi/instructions/01-beir_facts.json"
+		# # HippoRAG Fact metadata
+
+		# instruction="/home/sasokan/suchith/maggi/instructions/01-beir_facts.json"
 
 		# bash scripts/00-nvembed_inference.sh $dataset fct $dset_type
 		# bash scripts/00-nvembed_inference.sh $dataset tst $dset_type  fact-lbl $instruction
@@ -87,8 +95,8 @@ then
 
 		# meta_info_file=/data/datasets/beir/$dataset/XC/intent_substring/raw_data/intent.raw.csv
 		# bash scripts/00-nvembed_inference.sh $dataset meta $dset_type None None None intent-substring $meta_info_file
-		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --train --repr_suffix fact-lbl \
-		# 	--meta_pred --meta_name intent-substring
+		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --train \
+		# --repr_suffix fact-lbl --meta_pred --meta_name intent-substring
 
 		# meta_info_file=/data/datasets/beir/$dataset/XC/raw_data/hipporag-fact_exact.raw.csv
 		# bash scripts/00-nvembed_inference.sh $dataset meta $dset_type None None None hipporag-fact-exact $meta_info_file
@@ -97,8 +105,17 @@ then
 		# meta_info_file=/data/datasets/beir/$dataset/XC/raw_data/hipporag-fact.raw.csv
 		# meta_info_file=/data/datasets/beir/$dataset/XC/raw_data/hipporag-fact_label_cluster_samples.raw.csv
 		# bash scripts/00-nvembed_inference.sh $dataset meta $dset_type None None None hipporag-fact-exact $meta_info_file
-		python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --repr_suffix fact-lbl \
-			--meta_pred --meta_name hipporag-fact-exact
+		# python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --repr_suffix fact-lbl \
+		# 	--meta_pred --meta_name hipporag-fact-exact
+
+
+		# # Wikipedia category metadata
+		# instruction="/home/sasokan/suchith/maggi/instructions/04-wikipedia-category.json"
+		# bash scripts/00-nvembed_inference.sh $dataset tst $dset_type  category-lbl $instruction
+
+		meta_rep_file=/data/outputs/maggi/00_nvembed-to-compute-msmarco-embeddings-004/representations/beir/metadata/wikipedia-category_repr.pth
+		python maggi/00_nvembed-metric-from-embeddings-002.py --dataset $dataset --normalize --dset_type $dset_type --repr_suffix category-lbl \
+			--meta_pred --meta_name wikipedia-category --meta_rep_file $meta_rep_file
 	done
 
 elif [ $expt_no == 4 ]
